@@ -10,6 +10,7 @@ import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.api.model.Group;
 import com.mellmo.roambi.api.model.User;
+import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
@@ -31,10 +32,10 @@ public class RemovePermissionCommand extends CommandBase {
     @Parameter(names="--target", description="target file")
     private String remoteUid;
 
-    @Parameter(names="--groupIds", variableArity = true, description="group ids")
+    @Parameter(names="--groupIds", variableArity = true, description="group ids", required=false)
     private List<String> groupIds;
 
-    @Parameter(names="--userIds", variableArity = true, description = "user ids")
+    @Parameter(names="--userIds", variableArity = true, description = "user ids", required=false)
     private List<String> userIds;
 
 
@@ -45,8 +46,27 @@ public class RemovePermissionCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
+
+        if(groupIds == null) {
+            groupIds = new ArrayList<String>();
+        }
+        if(userIds == null) {
+            userIds = new ArrayList<String>();
+        }
+        logger.info("executing: " + name);
+        logger.info("target: " + remoteUid);
+        logger.info("users: " + userIds.toString());
+        logger.info("groups: " + groupIds.toString());
+
         client.currentUser();
-        client.removePermission(new ContentItem(remoteUid, ""), groupIds, userIds);
+        if(groupIds.size() > 0 || userIds.size() > 0){
+            client.removePermission(
+                    RoambiClientUtil.getContentItem(remoteUid, client),
+                    groupIds.size()>0?RoambiClientUtil.getGroupIds(groupIds, client):groupIds,
+                    userIds.size()>0?RoambiClientUtil.getUserIds(userIds, client):userIds);
+        } else {
+            throw new Exception("No groups or users specified.");
+        }
 
     }
 }

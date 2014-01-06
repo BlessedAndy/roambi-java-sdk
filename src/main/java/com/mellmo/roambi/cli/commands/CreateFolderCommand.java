@@ -7,11 +7,15 @@ package com.mellmo.roambi.cli.commands;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
+import com.mellmo.roambi.api.model.RoambiFilePermission;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,11 +30,14 @@ public class CreateFolderCommand extends CommandBase {
     private static Logger logger = Logger.getLogger(CreateFolderCommand.class);
     private final String commandName = "mkdir";
 
-    @Parameter(names="--folder", description="parent folder")
+    @Parameter(names="--folder", description="parent folder", required=false)
     private String parentFolder=null;
 
     @Parameter(names="--title", description="title of the new folder")
     private String title;
+
+    @Parameter(names="--permission", description="set permissions for folder", variableArity = true, required=false)
+    private List<String> permissionIds;
 
     @Override
     public String getName() {
@@ -42,8 +49,17 @@ public class CreateFolderCommand extends CommandBase {
         logger.info("executing: " + commandName);
         logger.info("folder: " + parentFolder);
         logger.info("title: " + title);
+        if(permissionIds !=null) {
+            logger.info("permission:" + permissionIds.toString());
+        }
 
         client.currentUser();
-        client.createFolder(parentFolder==null?null:RoambiClientUtil.getContentItem(parentFolder, client), title);
+        ContentItem newFolder = client.createFolder(parentFolder==null?null:RoambiClientUtil.getContentItem(parentFolder, client), title);
+
+        if(permissionIds != null && newFolder != null) {
+            RoambiClientUtil.addPermission(newFolder, permissionIds, client);
+        }
     }
+
+
 }

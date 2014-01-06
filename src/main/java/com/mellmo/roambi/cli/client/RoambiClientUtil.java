@@ -7,13 +7,16 @@ package com.mellmo.roambi.cli.client;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.exceptions.PortalContentNotFoundException;
-import com.mellmo.roambi.api.model.ContentItem;
-import com.mellmo.roambi.api.model.ContentResult;
+import com.mellmo.roambi.api.model.*;
+import javassist.expr.NewArray;
 import org.apache.log4j.Logger;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.ArrayList;
+
+import static org.junit.Assert.assertNull;
 
 /**
  * Created with IntelliJ IDEA.
@@ -35,7 +38,7 @@ public class RoambiClientUtil {
 
     }
 
-    public static ContentItem getContentItem(String item, RoambiApiClient client) {
+    public static ContentItem getContentItem(String item, RoambiApiClient client) throws Exception {
         if(isUIDValue(item)){
             return new ContentItem(item, "");
         }
@@ -44,14 +47,17 @@ public class RoambiClientUtil {
                 ContentResult result = getContentAndFolderByPath("rfs", item, client);
                 if (result.getContent() != null) {
                     return result.getContent();
+                } else {
+                    throw new FileNotFoundException("Can't find item: " + item);
                 }
             } catch (PortalContentNotFoundException e) {
                 log.error("Portal not found.");
+                throw e;
 
             } catch (FileNotFoundException e) {
                 log.error("File not found.");
+                throw e;
             }
-            return null;
         }
     }
 
@@ -81,7 +87,7 @@ public class RoambiClientUtil {
                     }
                 }
                 if (folder == null) {
-                    throw new PortalContentNotFoundException("The specified folder '" + destinationPath + "' could not be found on portal '" + portalUid + "'");
+                    throw new PortalContentNotFoundException("The specified path '" + destinationPath + "' could not be found on portal '" + portalUid + "'");
                 }
             }
         } catch (ApiException apiEx) {
@@ -110,5 +116,69 @@ public class RoambiClientUtil {
         }
 
         return result;
+    }
+
+    public static List<String> getUserIds(List<String> users, RoambiApiClient client) throws ApiException {
+        PagedList<User> pagedList = client.getUsers();
+        List<User> userList = pagedList.getResults();
+        List<String> results = new ArrayList<String>();
+
+        //if 'all' don't bother parsing the rest of the list
+        if(users.contains("all")) {
+            for(User u:userList) {
+                results.add(u.getUid());
+            }
+        }
+        else {
+           //loop through list and get the client id if it matches the username
+            for(String userId:users) {
+                if(userId.equals("self")) {
+                    results.add(client.currentUser().getUid());
+                    continue;
+                }
+                for(User user:userList) {
+                     if(userId.equals(user.getPrimaryEmail()) || userId.equals(user.getUid())) {
+                         results.add(user.getUid());
+                         break;
+                     }
+                }
+            }
+        }
+
+        return results;
+    }
+
+    public static List<String> getGroupIds(List<String> groups, RoambiApiClient client) throws ApiException {
+        List<Group> groupList = client.getGroups();
+        List<String> results = new ArrayList<String>();
+        for(String groupId:groups) {
+            for(Group grp:groupList) {
+                if(groupId.equals(grp.getName()) || groupId.equals(grp.getUid())) {
+                    results.add(grp.getUid());
+                }
+            }
+        }
+        return results;
+    }
+
+    public static void addPermission(ContentItem newItem, List<String> permissionIds, RoambiApiClient client) throws ApiException {
+        List<String> userIds = RoambiClientUtil.getUserIds(permissionIds, client);
+        List<String> groupIds=null;
+        if(!permissionIds.contains("all")) {
+            groupIds= RoambiClientUtil.getGroupIds(permissionIds, client);
+        }
+
+        client.addPermission(newItem, groupIds, userIds, RoambiFilePermission.WRITE);
+    }
+
+    public static ContentItem findFile(String directory_uid, ContentItem fileItem, RoambiApiClient client) throws ApiException {
+        ContentItem foundItem = null;
+        List<ContentItem> directoryListing = client.getPortalContents("rfs", directory_uid);
+        for(ContentItem content:directoryListing) {
+            if( content.getName().equals(fileItem.getName()) || content.getUid().equals(fileItem.getUid()) ) {
+                foundItem = content;
+            }
+        }
+        return foundItem;
     }
 }

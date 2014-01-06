@@ -10,11 +10,11 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.cli.client.RoambiClientWrapper;
 import com.mellmo.roambi.cli.commands.CommandBase;
-import com.mellmo.roambi.cli.commands.CreateSourceCommand;
-import com.mellmo.roambi.cli.commands.UpdateSourceCommand;
+import com.mellmo.roambi.cli.commands.ConfigureCommand;
 import org.reflections.Reflections;
 
 import java.util.*;
+import java.lang.reflect.Modifier;
 
 import org.apache.log4j.Logger;
 
@@ -68,12 +68,14 @@ public class RoambiCmdLineClient {
         Iterator <Class <?extends CommandBase>> itr = subTypes.iterator();
         while(itr.hasNext()) {
             Class clazz = itr.next();
-            logger.info("registering command class: " + clazz.getName());
+            logger.debug("registering command class: " + clazz.getName());
 
             try {
-                CommandBase obj = (CommandBase) clazz.newInstance();
-                commands.put(obj.getName(), obj);
-                jct.addCommand(obj.getName(), obj);
+                if(!Modifier.isAbstract(clazz.getModifiers())) {
+                    CommandBase obj = (CommandBase) clazz.newInstance();
+                    commands.put(obj.getName(), obj);
+                    jct.addCommand(obj.getName(), obj);
+                }
             } catch (IllegalAccessException e) {
                 logger.error("could not add command: " + clazz.getName()+". skipping.");
             } catch (InstantiationException e) {
@@ -92,6 +94,10 @@ public class RoambiCmdLineClient {
             if(cb==null || cb.getHelp()) {
                 jct.usage(cb.getName());
             } else {
+                //kludge
+                if(cb instanceof ConfigureCommand) {
+                   ((ConfigureCommand)cb).setPropertiesPath(propertiesFile);
+                }
                 cb.execute(clientWrapper.getClient());
                 return;
             }
@@ -103,7 +109,9 @@ public class RoambiCmdLineClient {
         try {
             RoambiCmdLineClient cmd = new RoambiCmdLineClient(args);
             cmd.execute();
+            Logger.getLogger(RoambiCmdLineClient.class).info("Finished.");
         } catch (Exception e) {
+            Logger.getLogger(RoambiCmdLineClient.class).error("Failed. " + e.getLocalizedMessage());
             System.exit(1);
         }
     }

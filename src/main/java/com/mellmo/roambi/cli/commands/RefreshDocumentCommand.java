@@ -13,6 +13,7 @@ import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -37,6 +38,8 @@ public class RefreshDocumentCommand extends CommandBase{
     String title;
     //@Parameter(names="--overwrite", description = "overwrite existing")
     boolean overwrite=true;
+    @Parameter(names="--permission", description="set permissions for new document", variableArity = true, required=false)
+    private List<String> permissionIds;
 
     @Override
     public String getName() {
@@ -51,11 +54,15 @@ public class RefreshDocumentCommand extends CommandBase{
         logger.info("destinationFolder: " + destinationFolder);
         logger.info("title: " + title);
         logger.info("overwrite: " + overwrite);
+        if(permissionIds !=null) {
+            logger.info("permission:" + permissionIds.toString());
+        }
 
         client.currentUser();
         String destination_rbi_name = title;
+        ContentItem destinationItem =  RoambiClientUtil.getContentItem(destinationFolder, client);
         ApiJob job = client.createAnalyticsFile(RoambiClientUtil.getContentItem(sourceFile, client), RoambiClientUtil.getContentItem(template, client),
-                RoambiClientUtil.getContentItem(destinationFolder, client), destination_rbi_name, overwrite);
+                destinationItem, destination_rbi_name, overwrite);
 
         int tries = 0;
         while(job.getStatus()==ApiJob.JobStatus.PROCESSING) {
@@ -66,6 +73,11 @@ public class RefreshDocumentCommand extends CommandBase{
             if(++tries > maxTries) {
                 throw new Exception("Reached max tries.  Job aborted.");
             }
+        }
+
+        ContentItem newItem = RoambiClientUtil.findFile(destinationItem.getUid(), new ContentItem("", title), client );
+        if(permissionIds != null && newItem != null) {
+            RoambiClientUtil.addPermission(newItem, permissionIds,client);
         }
     }
 }

@@ -7,10 +7,12 @@ package com.mellmo.roambi.cli.commands;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -34,6 +36,9 @@ public class CreateSourceCommand extends CommandBase {
     @Parameter(names="--title", description="title of the new file")
     private String title;
 
+    @Parameter(names="--permission", description="set permissions for new file", variableArity = true, required=false)
+    private List<String> permissionIds;
+
     public CreateSourceCommand(){}
 
     @Override
@@ -47,9 +52,15 @@ public class CreateSourceCommand extends CommandBase {
         logger.info("file: " + newFile);
         logger.info("folder: " + parentFolder);
         logger.info("title: " + title);
+        if(permissionIds !=null) {
+            logger.info("permission:" + permissionIds.toString());
+        }
 
         File sourceFile = new File(newFile);
         client.currentUser();
-        client.createFile(RoambiClientUtil.getContentItem(parentFolder, client), title, sourceFile);
+        ContentItem newItem = client.createFile(RoambiClientUtil.getContentItem(parentFolder, client), title, sourceFile);
+        if(permissionIds != null && newItem != null) {
+            RoambiClientUtil.addPermission(newItem, permissionIds,client);
+        }
     }
 }

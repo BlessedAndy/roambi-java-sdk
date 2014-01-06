@@ -64,7 +64,7 @@ public class RoambiClientWrapper implements RoambiApiApplication {
             roambiApiClient.setCurrentAccount(account);
 
         } catch (IOException e) {
-            logger.error("Could not load client properties.");
+            logger.warn("Could not load client properties.");
         } catch (ApiException e) {
             logger.error("Could not get user account.");
         }
