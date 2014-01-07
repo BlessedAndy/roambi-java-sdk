@@ -44,7 +44,7 @@ public class RoambiClientUtilTest {
     }
 
     @Test
-    public void testGetContentItemFromPath() throws ApiException {
+    public void testGetContentItemFromPath() throws Exception {
 
         String foobar = "51ba35e4e4b0b7be452482b9";
         RoambiApiClient client = roambiClientWrapper.getClient();
