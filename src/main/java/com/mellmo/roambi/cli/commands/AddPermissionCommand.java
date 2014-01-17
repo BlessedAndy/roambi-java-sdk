@@ -38,7 +38,7 @@ public class AddPermissionCommand extends CommandBase {
     @Parameter(names="--userIds", variableArity = true, description = "user ids", required=false)
     private List<String> userIds;
 
-    //@Parameter(names="--access", description = "'view' or 'publish'")
+    @Parameter(names="--access", description = "'view' or 'publish'")
     private String mode = "read";
 
     @Override
