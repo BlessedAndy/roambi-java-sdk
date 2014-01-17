@@ -25,7 +25,7 @@ import java.util.List;
 @Parameters(separators = "=", commandDescription = "Upload and create a file in the Roambi Repository")
 public class CreateSourceCommand extends CommandBase {
     private static Logger logger = Logger.getLogger(CreateSourceCommand.class);
-    private final String commandName = "create";
+    private final String commandName = "upload";
 
     @Parameter(names="--file", description="locale file you with to upload")
     private String newFile;

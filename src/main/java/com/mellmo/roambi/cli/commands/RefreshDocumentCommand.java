@@ -26,7 +26,7 @@ import java.util.List;
 @Parameters(separators = "=", commandDescription = "Refresh a Roambi document")
 public class RefreshDocumentCommand extends CommandBase{
     private static Logger logger = Logger.getLogger(RefreshDocumentCommand.class);
-    private final String commandName = "refresh";
+    private final String commandName = "publish";
 
     @Parameter(names="--source", description="remote source file")
     String sourceFile;
