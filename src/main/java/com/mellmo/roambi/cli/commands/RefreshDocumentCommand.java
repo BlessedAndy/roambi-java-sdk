@@ -74,6 +74,10 @@ public class RefreshDocumentCommand extends CommandBase{
                 throw new Exception("Reached max tries.  Job aborted.");
             }
         }
+        
+        if (job.getException() != null && !"".equals(job.getException())) {
+        	throw new Exception(job.getException());
+        }
 
         ContentItem newItem = RoambiClientUtil.findFile(destinationItem.getUid(), new ContentItem("", title), client );
         if(permissionIds != null && newItem != null) {
