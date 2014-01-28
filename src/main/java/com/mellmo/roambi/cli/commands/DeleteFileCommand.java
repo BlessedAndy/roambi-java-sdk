@@ -5,6 +5,7 @@
 package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
@@ -19,6 +20,7 @@ import java.io.File;
  * Time: 11:05 AM
  * To change this template use File | Settings | File Templates.
  */
+@Parameters(separators = "=", commandDescription = "Delete a file in the Roambi Repository")
 public class DeleteFileCommand extends CommandBase {
     private static Logger logger = Logger.getLogger(DeleteFileCommand.class);
     private final String commandName = "delete";
@@ -35,7 +37,7 @@ public class DeleteFileCommand extends CommandBase {
     public void execute(RoambiApiClient client) throws Exception {
         logger.info("executing: " + commandName);
         logger.info("file: " + file);
-
+        client.currentUser();
         ContentItem item = RoambiClientUtil.getContentItem(file, client);
         client.deleteFile(item.getUid());
     }
