@@ -18,7 +18,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
-public class ContentItem {
+public class ContentItem implements IBaseModel {
 
 	protected static final Logger LOG = Logger.getLogger(ContentItem.class);
 	private String uid;
@@ -139,5 +139,9 @@ public class ContentItem {
     
     public Date getUpdatedDate() {
     	return this.updatedDate;
-    }
+	}
+	
+	public boolean isFolder() {
+		return "FOLDER".equals(this.getType());
+	}
 }

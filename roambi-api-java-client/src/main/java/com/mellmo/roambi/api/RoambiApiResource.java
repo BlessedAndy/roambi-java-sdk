@@ -4,6 +4,10 @@
  */
 package com.mellmo.roambi.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.base.Strings;
+
 public enum RoambiApiResource {
 
 	AUTHORIZE {
@@ -74,7 +78,37 @@ public enum RoambiApiResource {
     },
 	LIST_GROUPS {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, "groups");
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS);
+		}
+	},
+	GROUPS_UID {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]));
+		}
+	},
+	GROUPS_UID_INFO {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), INFO);
+		}
+	},
+	GROUPS_UID_USERS {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), USERS);
+		}
+	},
+	GROUPS_UID_USERS_REMOVE {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), USERS, REMOVE);
+		}
+	},
+	GROUPS_UID_USERS_UID {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), USERS, toValue(USER_UID, params[1]));
+		}
+	},
+	GROUPS_USERS_UID {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, USERS, toValue(USER_UID, params[0]));
 		}
 	},
 	LIST_PORTALS {
@@ -85,6 +119,16 @@ public enum RoambiApiResource {
 	LIST_USERS {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS);
+		}
+	},
+	USERS_UID {
+		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, toValue(USER_UID, params[0]));
+		}
+	},
+	USERS_UID_GROUPS_UID {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, toValue(USER_UID, params[0]), GROUPS, toValue(GROUP_UID, params[1]));
 		}
 	},
 	PORTAL_CONTENTS {
@@ -130,6 +174,9 @@ public enum RoambiApiResource {
 	},
 	;
 
+	protected static final String USER_UID = "user_uid";
+	protected static final String GROUP_UID = "group_uid";
+	protected static final String GROUPS = "groups";
 	protected static final String REMOVE = "remove";
 	protected static final String USERS = "users";
 	protected static final String ANALYTICS = "analytics";
@@ -163,9 +210,14 @@ public enum RoambiApiResource {
 		if (builder.length() > 0) {
 			builder.setLength(builder.length() - 1);
 		}
-		if (RoambiApiClient.log.isDebugEnabled()) {
-			RoambiApiClient.log.debug("Hitting url:" + builder.toString());
+		if (RoambiApiClient.LOG.isDebugEnabled()) {
+			RoambiApiClient.LOG.debug("Hitting url:" + builder.toString());
 		}
 		return builder.toString();
+	}
+	
+	private static String toValue(final String name, final String value) {
+		checkArgument(!Strings.isNullOrEmpty(value), name + " cannot be null");
+		return value;
 	}
 }

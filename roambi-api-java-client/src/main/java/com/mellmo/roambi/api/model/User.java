@@ -1,7 +1,3 @@
-/**
- * This sample code and information are provided "as is" without warranty of any kind, either expressed or implied, including
- * but not limited to the implied warranties of merchantability and/or fitness for a particular purpose.
- */
 package com.mellmo.roambi.api.model;
 
 import java.util.ArrayList;
@@ -9,14 +5,20 @@ import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mellmo.roambi.api.utils.JsonUtils;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
-public class User {
+public class User implements IBaseModel {
+	
+	public static final String FAMILY_NAME = "family_name";
+	public static final String GIVEN_NAME = "given_name";
+	public static final String PRIMARY_EMAIL = "primary_email";
 
 	private String uid;
 	private String givenName;
 	private String familyName;
 	private String primaryEmail;
+	private UserAccount userAccount;
 
 	public User() {
 	}
@@ -56,16 +58,29 @@ public class User {
 	public void setPrimaryEmail(String primaryEmail) {
 		this.primaryEmail = primaryEmail;
 	}
-
+	
+	public UserAccount getUserAccount() {
+		return this.userAccount;
+	}
+	
 	public static User fromUserResourcesResponse(String json) {
-		User user = new User();
-
 		JsonObject responseProps = ResponseUtils.responseToObject(json).get("resources").getAsJsonObject();
-		user.setUid(responseProps.get("uid").getAsString());
-		user.setFamilyName(responseProps.get("family_name").getAsString());
-		user.setGivenName(responseProps.get("given_name").getAsString());
-		user.setPrimaryEmail(responseProps.get("primary_email").getAsString());
-
+		return getUser(responseProps);
+	}
+	
+	public static User fromApiResponseToUser(final String json) {
+		final JsonObject userJson = ResponseUtils.responseToObject(json).get("user").getAsJsonObject();
+		final User user = getUser(userJson);
+		return user;
+	}
+	
+	public static User getUser(final JsonObject json) {
+		final User user = new User();
+		user.setUid(json.get("uid").getAsString());
+		user.setFamilyName(json.get(FAMILY_NAME).getAsString());
+		user.setGivenName(json.get(GIVEN_NAME).getAsString());
+		user.setPrimaryEmail(json.get(PRIMARY_EMAIL).getAsString());
+		user.userAccount = UserAccount.getUserAccount(JsonUtils.getJson(json, "user_account"));
 		return user;
 	}
 

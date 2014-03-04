@@ -26,7 +26,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
-import org.apache.commons.httpclient.methods.DeleteMethod;
+import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -50,14 +50,16 @@ import com.mellmo.roambi.api.model.Group;
 import com.mellmo.roambi.api.model.PagedList;
 import com.mellmo.roambi.api.model.Portal;
 import com.mellmo.roambi.api.model.RoambiFilePermission;
+import com.mellmo.roambi.api.model.Role;
 import com.mellmo.roambi.api.model.User;
+import com.mellmo.roambi.api.model.UserAccount;
 import com.mellmo.roambi.api.requests.AddPermissionsRequest;
 import com.mellmo.roambi.api.requests.AddPermissionsRequest.FilePermission;
 import com.mellmo.roambi.api.requests.RemovePermissionsRequest;
 import com.mellmo.roambi.api.utils.JsonUtils;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
-public class RoambiApiClient {
+public class RoambiApiClient extends RESTClient {
 	public static final String DIRECTORY_UID = "directory_uid";
 	public static final String FOLDER_UID = "folder_uid";
 	public static final String OVERWRITE = "overwrite";
@@ -67,16 +69,11 @@ public class RoambiApiClient {
 	private static final String GRANT_TYPE = "grant_type";
 	private static final String ACCESS_TOKEN = "access_token";
 	private static final String REFRESH_TOKEN = "refresh_token";
-	protected static final String APPLICATION_JSON = "application/json";
 	protected static final String ACCEPT = "Accept";
-	protected static final String UTF_8 = "utf-8";
-	protected static final String TEXT_JSON = "text/json";
-	protected static final String BEARER = "Bearer ";
-	protected static final String AUTHORIZATION = "Authorization";
 	public static final String DEFAULT_API_SERVICE_BASE_URL = "https://api.roambi.com/";
 	private static final String TOKEN_ENDPOINT = "token";
 	private static final String AUTHORIZE_ENDPOINT = "authorize";
-	protected static final Logger log = Logger.getLogger(RoambiApiClient.class);
+	protected static final Logger LOG = Logger.getLogger(RoambiApiClient.class);
 
 	private String clientId;
 	private String clientSecret;
@@ -125,11 +122,8 @@ public class RoambiApiClient {
 	}
 
 	public List<Account> getUserAccounts() throws ApiException {
-		if (!isAuthenticated()) {
-			authenticate();
-		}
-		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, currentAccountUid);
-		ApiInvocationHandler handler = new ApiInvocationHandler(buildApiGetMethod(accessToken, url)) {
+		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
+		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
 				return Account.fromUserResourcesResponse(this.method.getResponseBodyAsString());
 			}
@@ -138,26 +132,146 @@ public class RoambiApiClient {
 	}
 	
 	private User getCurrentUser() throws ApiException {
-		if (!isAuthenticated()) {
-			authenticate();
-		}
-
-		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, currentAccountUid);
-		return (User) new ApiInvocationHandler(buildApiGetMethod(accessToken, url)) {
+		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
+		return (User) new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
 				return User.fromUserResourcesResponse(this.method.getResponseBodyAsString());
 			}
 		}.invokeApi();
 	}
 	
-	public List<Portal> getPortals() throws ApiException {
-		if (!isAuthenticated()) {
-			authenticate();
-		}
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
+    public List<Group> getGroups() throws ApiException {
+        String url = RoambiApiResource.LIST_GROUPS.url(baseServiceUrl, apiVersion, getAccountUid());
+        ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
+            public Object onSuccess() throws HttpException, IOException {
+                return Group.fromApiResponseToGroups(this.method.getResponseBodyAsString());
+            }
+        };
+        return (List<Group>) handler.invokeApi();
+	}
+	
+	public Group getGroupInfo(final String groupUid) throws ApiException {
+		final String url = RoambiApiResource.GROUPS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid);
+		return invokeMethodGetGroupResponse(buildGetMethod(url));
+	}
+	
+	public Group createGroup(final String name) throws ApiException {
+		final String url = RoambiApiResource.LIST_GROUPS.url(baseServiceUrl, apiVersion, getAccountUid());
+		final HttpMethodBase method = buildPostMethod(url, toParam(Group.NAME, name));
+		return invokeMethodGetGroupResponse(method);
+	}
+		
+	public Group setGroupInfo(final String groupUid, final String name, final String description) throws ApiException {
+		return updateGroupInfo(groupUid, toParam(Group.NAME, name), toParam(Group.DESCRIPTION, description));
+	}
 
-		String url = RoambiApiResource.LIST_PORTALS.url(baseServiceUrl, apiVersion, currentAccountUid);
-		ApiInvocationHandler handler = new ApiInvocationHandler(buildApiGetMethod(accessToken, url)) {
+	public Group setGroupName(final String groupUid, final String name) throws ApiException {
+		return updateGroupInfo(groupUid, toParam(Group.NAME, name));
+	}
+	
+	public Group setGroupDescription(final String groupUid, final String description) throws ApiException {
+		return updateGroupInfo(groupUid, toParam(Group.DESCRIPTION, description));
+	}
+	
+	private Group updateGroupInfo(final String groupUid, final NameValuePair... params) throws ApiException {
+		final String url = RoambiApiResource.GROUPS_UID_INFO.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid);
+		final HttpMethodBase method = buildPutMethod(url, params);
+		return invokeMethodGetGroupResponse(method);
+	}
+	
+	public void deleteGroup(final String groupUid) throws ApiException {
+		getDeleteResourceResponse(RoambiApiResource.GROUPS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid), "deleteGroup");
+	}
+	
+	public Group addGroupUsers(final String groupUid, final String... users) throws ApiException {
+		return updateGroupUsers(RoambiApiResource.GROUPS_UID_USERS, groupUid, users);
+	}
+	
+	public Group removeGroupUsers(final String groupUid, final String... users) throws ApiException {
+		return updateGroupUsers(RoambiApiResource.GROUPS_UID_USERS_REMOVE, groupUid, users);
+	}
+	
+	private Group updateGroupUsers(final RoambiApiResource endpoint, final String groupUid, final String... users) throws ApiException {
+		final String url = endpoint.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid);
+		final HttpMethodBase method = RESTClient.buildPostMethod(getAccessToken(), url, APPLICATION_JSON, Group.USERS, users);
+		return invokeMethodGetGroupResponse(method);
+	}
+	
+	private Group invokeMethodGetGroupResponse(final HttpMethodBase method) throws ApiException {
+		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
+			public Object onSuccess() throws HttpException, IOException {
+				return Group.fromApiResponseToGroup(this.method.getResponseBodyAsString());
+			}
+		};
+		return (Group) handler.invokeApi();
+	}
+	
+	public void removeGroupUser(final String groupUid, final String userUid) throws ApiException {
+		getDeleteResourceResponse(RoambiApiResource.GROUPS_UID_USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid, userUid), "removeGroupUser");
+	}
+	
+	public void removeUserFromAllGroups(final String userUid) throws ApiException {
+		getDeleteResourceResponse(RoambiApiResource.GROUPS_USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), userUid), "removeUserFromAllGroups");
+	}
+	
+	public User inviteUser(final String primary_email, final String given_name, final String family_name, final Role role) throws ApiException {
+		final String url = RoambiApiResource.LIST_USERS.url(baseServiceUrl, apiVersion, getAccountUid());
+		final HttpMethodBase method = buildPostMethod(url, toParam(User.PRIMARY_EMAIL, primary_email),
+														   toParam(User.GIVEN_NAME, given_name),
+														   toParam(User.FAMILY_NAME, family_name),
+														   toParam(UserAccount.ROLE, role));
+		return invokeMethodGetUserResponse(method);
+	}
+	
+	public User getUserInfo(final String userUid) throws ApiException {
+		final String url = RoambiApiResource.USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), userUid);
+		return invokeMethodGetUserResponse(buildGetMethod(url));
+	}
+	
+	public User setUserRole(final String userUid, final Role role) throws ApiException {
+		return updateUser(userUid, toParam(UserAccount.ROLE, role));
+	}
+	
+	public User enableUser(final String userUid) throws ApiException {
+		return updateUser(userUid, toParam(UserAccount.ENABLED, true));
+	}
+	
+	public User disableUser(final String userUid) throws ApiException {
+		return updateUser(userUid, toParam(UserAccount.ENABLED, false));
+	}
+	
+	public User updateUser(final String userUid, final Role role, final boolean enabled) throws ApiException {
+		return updateUser(userUid, toParam(UserAccount.ROLE, role), toParam(UserAccount.ENABLED, enabled));
+	}
+	
+    private User updateUser(final String userUid, final NameValuePair... params) throws ApiException {
+		final String url = RoambiApiResource.USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), userUid);
+		final HttpMethodBase method = buildPutMethod(url, params);
+		return invokeMethodGetUserResponse(method);
+	}
+
+	protected User invokeMethodGetUserResponse(final HttpMethodBase method) throws ApiException {
+		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
+			public Object onSuccess() throws HttpException, IOException {
+				return User.fromApiResponseToUser(this.method.getResponseBodyAsString());
+			}
+		};
+		return (User) handler.invokeApi();
+	}
+	
+	public PagedList<User> getUsers() throws ApiException {
+		String url = RoambiApiResource.LIST_USERS.url(baseServiceUrl, apiVersion, getAccountUid());
+		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
+			public Object onSuccess() throws HttpException, IOException {
+				return User.fromApiListResponse(this.method.getResponseBodyAsString());
+			}
+		};
+		return (PagedList<User>) handler.invokeApi();
+	}
+	
+	public List<Portal> getPortals() throws ApiException {
+		String url = RoambiApiResource.LIST_PORTALS.url(baseServiceUrl, apiVersion, getAccountUid());
+		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
 				return Portal.fromApiListResponse(this.method.getResponseBodyAsString());
 			}
@@ -166,34 +280,14 @@ public class RoambiApiClient {
 		return (List<Portal>) handler.invokeApi();
 	}
 
-	public PagedList<User> getUsers() throws ApiException {
-		if (!isAuthenticated()) {
-			authenticate();
-		}
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
-		String url = RoambiApiResource.LIST_USERS.url(baseServiceUrl, apiVersion, currentAccountUid);
-		ApiInvocationHandler handler = new ApiInvocationHandler(buildApiGetMethod(accessToken, url)) {
-			public Object onSuccess() throws HttpException, IOException {
-				return User.fromApiListResponse(this.method.getResponseBodyAsString());
-			}
-		};
-		
-		return (PagedList<User>) handler.invokeApi();
-	}
-
 	public List<ContentItem> getPortalContents(String portalUid, String folderUid) throws ApiException {
 		return getPortalContents(portalUid, folderUid, null);
 	}
 	
 	public List<ContentItem> getPortalContents(final String portalUid, final String folderUid, final String fileTypes) throws ApiException {
-		log.debug("Getting contents for portal '" + portalUid + "' and folder '" + folderUid + "' with file_types '" + fileTypes + "'");
-		if (!isAuthenticated()) {
-			authenticate();
-		}
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
-
-		final String url = RoambiApiResource.PORTAL_CONTENTS.url(baseServiceUrl, apiVersion, currentAccountUid, portalUid);
-		final GetMethod getMethod = buildApiGetMethod(accessToken, url);
+		LOG.debug("Getting contents for portal '" + portalUid + "' and folder '" + folderUid + "' with file_types '" + fileTypes + "'");
+		final String url = RoambiApiResource.PORTAL_CONTENTS.url(baseServiceUrl, apiVersion, getAccountUid(), portalUid);
+		final GetMethod getMethod = buildGetMethod(url);
 		final List<NameValuePair> queryParams = new ArrayList<NameValuePair>();
 		if (folderUid != null) {
 			queryParams.add(new NameValuePair(FOLDER_UID, folderUid));
@@ -206,7 +300,7 @@ public class RoambiApiClient {
 		}
 		final ApiInvocationHandler handler = new ApiInvocationHandler(getMethod) {
 			public Object onSuccess() throws HttpException, IOException {
-				log.debug("Contents JSON: " + this.method.getResponseBodyAsString());
+				LOG.debug("Contents JSON: " + this.method.getResponseBodyAsString());
 				return ContentItem.fromApiListResponse(this.method.getResponseBodyAsString());
 			}
 		};
@@ -214,10 +308,8 @@ public class RoambiApiClient {
 	}
 	
 	public ContentItem createFolder(final ContentItem parentFolder, final String title) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
-
-		final String url = RoambiApiResource.CREATE_FOLDER.url(this.baseServiceUrl,  this.apiVersion, this.currentAccountUid, new String[0]);
-		final PostMethod method = buildApiPostMethod(accessToken, url);
+		final String url = RoambiApiResource.CREATE_FOLDER.url(this.baseServiceUrl,  this.apiVersion, getAccountUid(), new String[0]);
+		final PostMethod method = buildApiPostMethod(getAccessToken(), url);
 		final List<NameValuePair> params = new ArrayList<NameValuePair>();
 		params.add(new NameValuePair(TITLE, title));
 		if (parentFolder != null) {
@@ -233,10 +325,8 @@ public class RoambiApiClient {
         checkArgument(! Strings.isNullOrEmpty(parentFolder.getUid()), "parentFolder UID cannot be null");
         checkArgument(! Strings.isNullOrEmpty(title), "Title cannot be null");
         checkArgument(sourceFile != null, "sourceFile cannot be null");
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
-
-		String url = RoambiApiResource.CREATE_FILE.url(baseServiceUrl, apiVersion, currentAccountUid);
-		PostMethod fileUpload = buildApiPostMethod(accessToken, url);
+		String url = RoambiApiResource.CREATE_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
+		PostMethod fileUpload = buildApiPostMethod(getAccessToken(), url);
 		Part[] parts = {
 				new StringPart(TITLE, title),
 				new StringPart(FOLDER_UID, parentFolder.getUid()),
@@ -248,23 +338,26 @@ public class RoambiApiClient {
 	}
 	
 	public void deleteFile(final String fileUid) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
-		final String url = RoambiApiResource.DELETE_FILE.url(baseServiceUrl, apiVersion, currentAccountUid, fileUid);
-		log.debug("fileUid: " + fileUid + " " + getDeleteContentItemResponse(url));
+		final String url = RoambiApiResource.DELETE_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
+		LOG.debug("fileUid: " + fileUid + " " + getDeleteResourceResponse(url));
 	}
 	
 	public void deleteFolder(final String folderUid) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(folderUid), "FolderUid is not set.");
-		final String url = RoambiApiResource.DELETE_FOLDER.url(baseServiceUrl, apiVersion, currentAccountUid, folderUid);
-		log.debug("folderUid: " + folderUid + " " + getDeleteContentItemResponse(url));
+		final String url = RoambiApiResource.DELETE_FOLDER.url(baseServiceUrl, apiVersion, getAccountUid(), folderUid);
+		LOG.debug("folderUid: " + folderUid + " " + getDeleteResourceResponse(url));
 	}
 	
-	protected String getDeleteContentItemResponse(final String url) throws ApiException {
-		final DeleteMethod method = new DeleteMethod(url);
-		addAuthorizationHeader(method, this.accessToken);
-		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
+	protected void getDeleteResourceResponse(final String url, final String func) throws ApiException {
+		final String result =  getDeleteResourceResponse(url);
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(func + ": " + result);
+		}
+	}
+	
+	protected String getDeleteResourceResponse(final String url) throws ApiException {
+		final ApiInvocationHandler handler = new ApiInvocationHandler(buildDeleteMethod(url)) {
 			@Override
 			public Object onSuccess() throws HttpException, IOException {
 				return this.method.getResponseBodyAsString();
@@ -293,7 +386,7 @@ public class RoambiApiClient {
     public ContentItem addPermission(ContentItem contentItem, List<String> groups, List<String> users, RoambiFilePermission permission) throws ApiException {
         checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
     	final String url = getAddPermissionUrl(contentItem);
-		final PostMethod publishMethod = buildApiPostMethod(accessToken, url);
+		final PostMethod publishMethod = buildApiPostMethod(getAccessToken(), url);
 		final AddPermissionsRequest request = new AddPermissionsRequest();
         final List<FilePermission> groupsPermission = new ArrayList<FilePermission>();
         if (groups !=null ) {
@@ -309,17 +402,17 @@ public class RoambiApiClient {
             }
         }
         request.setUsers(usersPermission);
-		setPostRequesStringEntity(publishMethod, request.toJsonBody());
-		return invokeMethodGetContentItemApiDetailsResponse(publishMethod, isFolder(contentItem));
+		setRequesStringEntity(publishMethod, request.toJsonBody());
+		return invokeMethodGetContentItemApiDetailsResponse(publishMethod, contentItem.isFolder());
     }
     
     protected String getAddPermissionUrl(final ContentItem contentItem) {
         checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-		if (isFolder(contentItem)) {
-            return RoambiApiResource.ADD_FOLDER_PERMISSION.url(baseServiceUrl, apiVersion, currentAccountUid, contentItem.getUid());
+		if (contentItem.isFolder()) {
+            return RoambiApiResource.ADD_FOLDER_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
         }
 		else {
-            return RoambiApiResource.ADD_PERMISSION.url(baseServiceUrl, apiVersion, currentAccountUid, contentItem.getUid());
+            return RoambiApiResource.ADD_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
         }
 	}
 
@@ -342,19 +435,19 @@ public class RoambiApiClient {
     public ContentItem removePermission(ContentItem contentItem, List<String> groups, List<String> users) throws ApiException {
         checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
     	final String url = getRemovePermissionUrl(contentItem);
-        final PostMethod publishMethod = buildApiPostMethod(accessToken, url);
+        final PostMethod publishMethod = buildApiPostMethod(getAccessToken(), url);
         final RemovePermissionsRequest request = new RemovePermissionsRequest(users, groups);
-        setPostRequesStringEntity(publishMethod, request.toJsonBody());
-        return invokeMethodGetContentItemApiDetailsResponse(publishMethod, isFolder(contentItem));
+        setRequesStringEntity(publishMethod, request.toJsonBody());
+        return invokeMethodGetContentItemApiDetailsResponse(publishMethod, contentItem.isFolder());
     }
     
     protected String getRemovePermissionUrl(final ContentItem contentItem) {
         checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-		if (isFolder(contentItem)) {
-            return RoambiApiResource.REMOVE_FOLDER_PERMISSION.url(baseServiceUrl, apiVersion, currentAccountUid, contentItem.getUid());
+		if (contentItem.isFolder()) {
+            return RoambiApiResource.REMOVE_FOLDER_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
         }
 		else {
-            return RoambiApiResource.REMOVE_PERMISSION.url(baseServiceUrl, apiVersion, currentAccountUid, contentItem.getUid());
+            return RoambiApiResource.REMOVE_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
         }
 	}
 
@@ -362,41 +455,38 @@ public class RoambiApiClient {
         checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
         checkArgument(!Strings.isNullOrEmpty(portalUid), "PortalUid is not set.");
         checkArgument(!Strings.isNullOrEmpty(title), "Title is not set.");
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
 
-		String url = RoambiApiResource.UPDATE_FILE.url(baseServiceUrl, apiVersion, currentAccountUid, portalUid, targetFile.getUid());
+		String url = RoambiApiResource.UPDATE_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), portalUid, targetFile.getUid());
 
-		PostMethod fileUpdateMethod = buildApiPostMethod(accessToken, url);
+		PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
         NameValuePair[] params = new NameValuePair[] {
                 new NameValuePair(TITLE, title)
         };
-        setPostRequesStringEntity(fileUpdateMethod, JsonUtils.createJsonFromParameters(params));
+        setRequesStringEntity(fileUpdateMethod, JsonUtils.createJsonFromParameters(params));
         return invokeMethodGetContentItemApiDetailsResponse(fileUpdateMethod, false);
 	}
 
     public ContentItem updateFileDirectory(ContentItem targetFile, String portalUid, ContentItem directory) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
         checkArgument(!Strings.isNullOrEmpty(directory.getUid()), "directory uid is not set.");
         checkArgument(!Strings.isNullOrEmpty(portalUid), "PortalUid uid is not set.");
 
-        String url = RoambiApiResource.UPDATE_FILE.url(baseServiceUrl, apiVersion, currentAccountUid, portalUid, targetFile.getUid());
+        String url = RoambiApiResource.UPDATE_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), portalUid, targetFile.getUid());
 
-        PostMethod fileUpdateMethod = buildApiPostMethod(accessToken, url);
+        PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
         NameValuePair[] params = new NameValuePair[] {
                 new NameValuePair(DIRECTORY_UID, directory.getUid())
         };
-        setPostRequesStringEntity(fileUpdateMethod, JsonUtils.createJsonFromParameters(params));
+        setRequesStringEntity(fileUpdateMethod, JsonUtils.createJsonFromParameters(params));
         return invokeMethodGetContentItemApiDetailsResponse(fileUpdateMethod, false);
     }
 
 
     public ContentItem updateFileData(ContentItem targetFile, InputStream inputStream, String contentType) throws ApiException, FileNotFoundException {
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
 
-        String url = RoambiApiResource.UPDATE_FILE_DATA.url(baseServiceUrl, apiVersion, currentAccountUid, targetFile.getUid());
-        PostMethod fileUpdateMethod = buildApiPostMethod(accessToken, url);
+        String url = RoambiApiResource.UPDATE_FILE_DATA.url(baseServiceUrl, apiVersion, getAccountUid(), targetFile.getUid());
+        PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
 
         RequestEntity requestEntity = new InputStreamRequestEntity(inputStream, contentType);
         fileUpdateMethod.setRequestEntity(requestEntity);
@@ -404,11 +494,10 @@ public class RoambiApiClient {
     }
 
     public ContentItem updateFileData(ContentItem targetFile, File sourceFile) throws ApiException, FileNotFoundException {
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
 
-        String url = RoambiApiResource.UPDATE_FILE_DATA.url(baseServiceUrl, apiVersion, currentAccountUid, targetFile.getUid());
-        PostMethod fileUpdateMethod = buildApiPostMethod(accessToken, url);
+        String url = RoambiApiResource.UPDATE_FILE_DATA.url(baseServiceUrl, apiVersion, getAccountUid(), targetFile.getUid());
+        PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
         Part[] parts = {
                 new FilePart("new_file", sourceFile, contentTypeForFile(sourceFile), null),
                 new FilePart("upload", sourceFile, contentTypeForFile(sourceFile), null)
@@ -419,12 +508,11 @@ public class RoambiApiClient {
     }
 
 	public ApiJob createAnalyticsFile(ContentItem sourceFile, ContentItem templateFile, ContentItem destinationFolder, String title, boolean overwrite) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(sourceFile.getUid()), "SourceFile uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(templateFile.getUid()), "TempFile uid is not set.");
+        checkArgument(!Strings.isNullOrEmpty(templateFile.getUid()), "TemplateFile uid is not set.");
 
-		String url = RoambiApiResource.CREATE_ANALYTICS_FILE.url(baseServiceUrl, apiVersion, currentAccountUid);
-		PostMethod publishMethod = buildApiPostMethod(accessToken, url);
+		String url = RoambiApiResource.CREATE_ANALYTICS_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
+		PostMethod publishMethod = buildApiPostMethod(getAccessToken(), url);
 		NameValuePair[] params = new NameValuePair[] {
 			new NameValuePair(TITLE, title),
 			new NameValuePair("source_file_uid", sourceFile.getUid()),
@@ -433,7 +521,7 @@ public class RoambiApiClient {
 			new NameValuePair(DIRECTORY_UID, destinationFolder.getUid())
 		};
 		//publishMethod.setRequestBody(JsonUtils.createJsonFromParameters(params));
-		setPostRequesStringEntity(publishMethod, JsonUtils.createJsonFromParameters(params));
+		setRequesStringEntity(publishMethod, JsonUtils.createJsonFromParameters(params));
 		ApiInvocationHandler handler = new ApiInvocationHandler(publishMethod) {
 			public Object onSuccess() throws HttpException, IOException {
 				return ContentItem.fromApiDetailsResponse(this.method.getResponseBodyAsString());
@@ -443,13 +531,12 @@ public class RoambiApiClient {
 	}
 	
 	public ApiJob createAnalyticsFile(final File sourceFile, final ContentItem templateFile, final ContentItem folder, final String title, final boolean overwrite) throws ApiException, FileNotFoundException {
-		checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
 		checkArgument((templateFile != null && !Strings.isNullOrEmpty(templateFile.getUid())), "templateFile uid is not set.");
 		checkArgument((sourceFile != null && sourceFile.exists()), "sourceFile does not exist.");
 		checkArgument((folder != null && !Strings.isNullOrEmpty(folder.getUid())), "folderr uid is not set.");
 		checkArgument(!Strings.isNullOrEmpty(title), "title is not set.");
-		final String url = RoambiApiResource.CREATE_ANALYTICS_FILE.url(baseServiceUrl, apiVersion, currentAccountUid);
-		final PostMethod method = buildApiPostMethod(accessToken, url);
+		final String url = RoambiApiResource.CREATE_ANALYTICS_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
+		final PostMethod method = buildApiPostMethod(getAccessToken(), url);
 		final NameValuePair[] params = new NameValuePair[] {
 			new NameValuePair(TITLE, title),
 			new NameValuePair(TEMPLATE_UID, templateFile.getUid()),
@@ -470,83 +557,46 @@ public class RoambiApiClient {
 		return (ApiJob) handler.invokeApi();
 	}
 	
-    public List<Group> getGroups() throws ApiException
-    {
-        if (!isAuthenticated()) {
-            authenticate();
-        }
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
-        String url = RoambiApiResource.LIST_GROUPS.url(baseServiceUrl, apiVersion, currentAccountUid);
-        GetMethod getMethod = buildApiGetMethod(accessToken, url);
-        ApiInvocationHandler handler = new ApiInvocationHandler(getMethod) {
-            public Object onSuccess() throws HttpException, IOException {
-                return Group.fromApiDetailsResponse(this.method.getResponseBodyAsString());
-            }
-        };
-        
-        return (List<Group>) handler.invokeApi();
-    }
-
     public ContentItem getFolderInfo(final String folderUid) throws ApiException {
-		if (!isAuthenticated()) {
-			authenticate();
-		}
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(folderUid), "FolderUid uid is not set.");
 
-		String url = RoambiApiResource.FOLDER_INFO.url(baseServiceUrl, apiVersion, currentAccountUid, folderUid);
-		final GetMethod method = buildApiGetMethod(accessToken, url);
-		return invokeMethodGetContentItemApiDetailsResponse(method, true);
+		String url = RoambiApiResource.FOLDER_INFO.url(baseServiceUrl, apiVersion, getAccountUid(), folderUid);
+		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(url), true);
 	}
 
-    public ContentItem getFileInfo(String fileUid) throws ApiException
-	{
-	    if (!isAuthenticated()) {
-            authenticate();
-        }
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
+    public ContentItem getFileInfo(String fileUid) throws ApiException {
         checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
-        String url = RoambiApiResource.FILE_INFO.url(baseServiceUrl, apiVersion, currentAccountUid, fileUid);
-        GetMethod getMethod = buildApiGetMethod(accessToken, url);
-        return invokeMethodGetContentItemApiDetailsResponse(getMethod, false);
+        String url = RoambiApiResource.FILE_INFO.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
+        return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(url), false);
     }
 
-    public ContentItem setFileInfo(String fileUid, ContentItem item) throws ApiException
-    {
-        if (!isAuthenticated()) {
-            authenticate();
-        }
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
+    public ContentItem setFileInfo(String fileUid, ContentItem item) throws ApiException {
         checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
         checkArgument(!Strings.isNullOrEmpty(item.getUid()), "Item uid is not set.");
 
-        String url = RoambiApiResource.FILE_INFO.url(baseServiceUrl, apiVersion, currentAccountUid, fileUid);
-        PostMethod postMethod = buildApiPostMethod(accessToken, url);
+        String url = RoambiApiResource.FILE_INFO.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
+        PostMethod postMethod = buildApiPostMethod(getAccessToken(), url);
 
         NameValuePair[] params = new NameValuePair[] {
                 new NameValuePair(TITLE, item.getName())
         };
-        setPostRequesStringEntity(postMethod, JsonUtils.createJsonFromParameters(params));
+        setRequesStringEntity(postMethod, JsonUtils.createJsonFromParameters(params));
         return invokeMethodGetContentItemApiDetailsResponse(postMethod, false);
     }
 
-	private void setPostRequesStringEntity(final PostMethod method, final String entityContent) {
+	private void setRequesStringEntity(final EntityEnclosingMethod method, final String entityContent) {
 		try {
             final RequestEntity re = new StringRequestEntity(entityContent, TEXT_JSON, UTF_8);
             method.setRequestEntity(re);
         } catch (UnsupportedEncodingException ue) {
-            log.error("Unable to set request body (encoding not supported): " + ue.getLocalizedMessage());
+            LOG.error("Unable to set request body (encoding not supported): " + ue.getLocalizedMessage());
         }
 	}
     
     public InputStream downloadFile(final String fileUid) throws ApiException, IOException {
-		if (!isAuthenticated()) {
-			authenticate();
-		}
-        checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
         checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
-		final String url = RoambiApiResource.DOWNLOAD_FILE.url(baseServiceUrl, apiVersion, currentAccountUid, fileUid);
-		final GetMethod method = buildApiGetMethod(accessToken, url);
+		final String url = RoambiApiResource.DOWNLOAD_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
+		final HttpMethodBase method = buildGetMethod(url);
 		try {
 			httpClient.executeMethod(method);
 			if (method.getStatusCode() == 200) {
@@ -556,7 +606,7 @@ public class RoambiApiClient {
 				throw ApiException.fromApiResponse(method.getStatusCode(), ResponseUtils.getResponseInputStream(method));
 			}
 		} catch (IOException e) {
-			log.error(e.getMessage());
+			LOG.error(e.getMessage());
             method.releaseConnection();
 			throw e;
 		}
@@ -565,14 +615,23 @@ public class RoambiApiClient {
 	public ApiJob getJob(String jobUid) throws ApiException {
         checkArgument(!Strings.isNullOrEmpty(jobUid), "JobUid is not set.");
 		String url = RoambiApiResource.GET_JOB.url(baseServiceUrl, apiVersion, jobUid);
-		GetMethod getMethod = buildApiGetMethod(accessToken, url);
-		ApiInvocationHandler handler = new ApiInvocationHandler(getMethod) {
+		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
 				return ApiJob.fromApiResponse(this.method.getResponseBodyAsStream());
 			}
 		};
 		
 		return (ApiJob) handler.invokeApi();
+	}
+	
+	protected String getAccessToken() throws ApiException {
+		if (!isAuthenticated()) authenticate();
+		return this.accessToken;
+	}
+	
+	private String getAccountUid() {
+		checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
+		return currentAccountUid;
 	}
 
 	private boolean authenticate() throws ApiException {
@@ -627,21 +686,21 @@ public class RoambiApiClient {
                 authPost.setRequestHeader(ACCEPT, APPLICATION_JSON);
 
                 int result = httpClient.executeMethod(authPost);
-                if (log.isDebugEnabled()) {
-                    log.debug("Auth result: " + result);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Auth result: " + result);
                     //for (Header header : authPost.getResponseHeaders()) {
                     //	log.debug(header.getName() + " :: " + header.getValue());
                     //}
                     String responseBody = authPost.getResponseBodyAsString();
-                    log.debug(responseBody);
+                    LOG.debug(responseBody);
                 }
 
                 switch(result) {
                     case 302:
-                        log.debug("Detected redirect response");
+                        LOG.debug("Detected redirect response");
                         Header header = authPost.getResponseHeader("Location");
                         if (header.getValue() != null && header.getValue().startsWith(redirect_uri)) {
-                            log.debug("Handling successful authentication");
+                            LOG.debug("Handling successful authentication");
                             final URI redirectUri = URI.create(header.getValue());
                             List<org.apache.http.NameValuePair> params = URLEncodedUtils.parse(redirectUri, UTF_8);
                             for (org.apache.http.NameValuePair pair : params) {
@@ -683,13 +742,13 @@ public class RoambiApiClient {
 			if (result == 400 || result == 401) {
                 throw ApiException.fromApiResponse(result, method.getResponseBodyAsStream());
             }
-			if (log.isDebugEnabled()) {
-				log.debug("Auth result: " + result);
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Auth result: " + result);
 				for (Header header : method.getResponseHeaders()) {
-					log.debug(header.getName() + " :: " + header.getValue());
+					LOG.debug(header.getName() + " :: " + header.getValue());
 				}
 				final String responseBody = method.getResponseBodyAsString();
-				log.debug(responseBody);
+				LOG.debug(responseBody);
 			}
 			final JsonObject responseObject = ResponseUtils.responseToObject(method.getResponseBodyAsString());
 			refreshToken = responseObject.get(REFRESH_TOKEN).getAsString();
@@ -711,12 +770,6 @@ public class RoambiApiClient {
 		return isAuthenticated();
 	}
 
-	private GetMethod buildApiGetMethod(String accessToken, String url) {
-		GetMethod getMethod = new GetMethod(url);
-		addAuthorizationHeader(getMethod, accessToken);
-		return getMethod;
-	}
-	
 	private PostMethod buildApiPostMethod(String accessToken, String url) {
 		PostMethod postMethod = new PostMethod(url);
 		addAuthorizationHeader(postMethod, accessToken);
@@ -734,12 +787,8 @@ public class RoambiApiClient {
 		return method;
 	}
 
-	protected void addAuthorizationHeader(final HttpMethodBase method, final String accessToken) {
-		method.addRequestHeader(AUTHORIZATION, BEARER + accessToken);
-	}
-	
 	private void handleApiException(Exception ex) {
-		log.info("Exception while communicating with the Roambi API: " + ex.getLocalizedMessage());
+		LOG.info("Exception while communicating with the Roambi API: " + ex.getLocalizedMessage());
 	}
 
 	public String getBaseServiceUrl() {
@@ -842,10 +891,6 @@ public class RoambiApiClient {
 		return (ContentItem) handler.invokeApi();
 	}
 
-	protected boolean isFolder(final ContentItem contentItem) {
-		return "FOLDER".equals(contentItem.getType());
-	}
-	
 	private boolean isRateLimitExceeded(final HttpMethodBase method) {
 		// api endpoint also throw 403 error which is not api rate limit exceeded error. So if response content-type is json, then we take error message from the body instead
 		/* 
@@ -862,13 +907,13 @@ public class RoambiApiClient {
 				if (value != null && value.indexOf(APPLICATION_JSON) > -1) {
 					result = false;
 				}
-				else if (log.isDebugEnabled()) {
-					log.debug("Server return 403 status code .... ");
-					log.debug("Content-Type: " + value);
+				else if (LOG.isDebugEnabled()) {
+					LOG.debug("Server return 403 status code .... ");
+					LOG.debug("Content-Type: " + value);
 					try {
-						log.debug("Body: " + method.getResponseBodyAsString());
+						LOG.debug("Body: " + method.getResponseBodyAsString());
 					} catch (IOException e) {
-						log.debug(e.getMessage());
+						LOG.debug(e.getMessage());
 					}
 				}
 			}

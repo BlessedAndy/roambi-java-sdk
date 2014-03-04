@@ -8,3 +8,4 @@
 # properties files for testing #
 *.properties
 !log4j.properties
+roambi.log

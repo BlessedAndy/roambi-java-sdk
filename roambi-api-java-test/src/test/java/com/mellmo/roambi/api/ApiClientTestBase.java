@@ -1,7 +1,3 @@
-/**
- * This sample code and information are provided "as is" without warranty of any kind, either expressed or implied, including
- * but not limited to the implied warranties of merchantability and/or fitness for a particular purpose.
- */
 package com.mellmo.roambi.api;
 
 import static org.junit.Assert.assertNull;
@@ -14,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 
@@ -174,5 +171,10 @@ public class ApiClientTestBase implements RoambiApiApplication {
             name = name + "." + extension;
         }
         return name;
+    }
+    
+    protected String getRandomEmail() {
+    	final StringBuilder builder = new StringBuilder(RandomStringUtils.randomAlphanumeric(10)).append('@').append(RandomStringUtils.randomAlphabetic(6)).append(".com");
+    	return builder.toString();
     }
 }

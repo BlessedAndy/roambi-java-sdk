@@ -8,13 +8,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
 public class Group {
 
+	public static final String USERS = "users";
+	public static final String NAME = "name";
+	public static final String DESCRIPTION = "description";
 	private String uid;
 	private String name;
+	private String description = null;
+	private final List<User> users = new ArrayList<User>();
 	
 	public Group() {
 		uid = null;
@@ -42,7 +48,30 @@ public class Group {
         this.name = name;
     }
     
-    public static List<Group> fromApiDetailsResponse(String json) {
+    public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(final String description) {
+		this.description = description;
+	}
+	
+	public List<User> getUsers() {
+		return this.users;
+	}
+	
+	public boolean hasUser(final String userUid) {
+		if (userUid != null) {
+			for (User user:this.users) {
+				if (user.getUid() != null && user.getUid().equals(userUid)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static List<Group> fromApiResponseToGroups(final String json) {
         
         List<Group> groups = new ArrayList<Group>();
         JsonObject responseProps = ResponseUtils.responseToObject(json);
@@ -55,17 +84,30 @@ public class Group {
         }
         
         return groups;
-    }
-    
-    private static Group buildGroup(JsonObject props)
+	}
+	
+	public static Group fromApiResponseToGroup(final String json) {
+		final JsonObject responseJson = ResponseUtils.responseToObject(json);
+		final JsonObject groupJson = responseJson.getAsJsonObject("group");
+		final Group group = buildGroup(groupJson);
+		if (groupJson.has(USERS) && groupJson.get(USERS).isJsonArray()) {
+			final JsonArray usersJson = groupJson.getAsJsonArray(USERS);
+			for (JsonElement userJson:usersJson) {
+				final User user = User.getUser((JsonObject) userJson);
+				group.users.add(user);
+			}
+		}
+		return group;
+	}
+	
+	private static Group buildGroup(JsonObject props)
     {
-        Group group = new Group();
+        final Group group = new Group();
         group.uid = props.get("uid").getAsString();
-        group.name = props.get("name").getAsString();
-//        group.createdAt = props.get("created_at").getAsString();
-//        group.updatedAt = props.get("updated_at").getAsString();
-        
+        group.name = props.get(NAME).getAsString();
+        if (props.has(DESCRIPTION) && !props.get(DESCRIPTION).isJsonNull()) {
+        	group.description = props.get(DESCRIPTION).getAsString();
+        }
         return group;
     }
-
 }
