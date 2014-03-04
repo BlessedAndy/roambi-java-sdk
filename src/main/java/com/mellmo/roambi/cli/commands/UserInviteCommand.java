@@ -5,13 +5,14 @@
 package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.Role;
 import com.mellmo.roambi.api.model.User;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
-import javassist.tools.web.Viewer;
 import org.apache.log4j.Logger;
 
+@Parameters(separators = "=", commandDescription = "Invite a user")
 public class UserInviteCommand extends CommandBase{
     private static Logger logger = Logger.getLogger(UserInviteCommand.class);
     private final String commandName = "userinvite";
@@ -36,7 +37,7 @@ public class UserInviteCommand extends CommandBase{
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        Role role = RoambiClientUtil.getUserRole(roleId);
+        Role role = RoambiClientUtil.validateRole(roleId);
         User user = client.inviteUser(email, givenName, familyName, role);
         logger.info(user.toJSON().toString());
     }

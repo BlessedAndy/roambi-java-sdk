@@ -5,16 +5,19 @@
 package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.User;
+import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import org.apache.log4j.Logger;
 
+@Parameters(separators = "=", commandDescription = "Get user information")
 public class UserInfoCommand extends CommandBase {
     private static Logger logger = Logger.getLogger(UserInfoCommand.class);
     private final String commandName = "userinfo";
 
     @Parameter(names="--id", description="user id")
-    private String userId;
+    public String userId;
 
     @Override
     public String getName() {
@@ -23,7 +26,7 @@ public class UserInfoCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        User user = client.getUserInfo(userId);
+        User user = client.getUserInfo(RoambiClientUtil.getUserId(userId, client));
         logger.info(user.toJSON().toString());
     }
 }

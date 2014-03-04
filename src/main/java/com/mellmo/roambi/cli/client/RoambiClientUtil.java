@@ -120,6 +120,18 @@ public class RoambiClientUtil {
         return result;
     }
 
+    public static String getUserId(String id, RoambiApiClient client) throws ApiException {
+        PagedList<User> pagedList = client.getUsers();
+        List<User> userList = pagedList.getResults();
+
+        for(User user:userList) {
+            if(id.equals(user.getPrimaryEmail()) || id.equals(user.getUid())) {
+                return user.getUid();
+            }
+        }
+        return id;
+    }
+
     public static List<String> getUserIds(List<String> users, RoambiApiClient client) throws ApiException {
         PagedList<User> pagedList = client.getUsers();
         List<User> userList = pagedList.getResults();
@@ -184,7 +196,7 @@ public class RoambiClientUtil {
         return foundItem;
     }
 
-    public static Role getUserRole(String roleId) {
+    public static Role validateRole(String roleId) {
         Role role = Role.VIEWER;
         if("publisher".equalsIgnoreCase(roleId)) {
             role = Role.PUBLISHER;

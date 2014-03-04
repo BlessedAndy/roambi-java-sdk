@@ -5,18 +5,19 @@
 package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import com.mellmo.roambi.api.model.User;
 import org.apache.log4j.Logger;
 
-
+@Parameters(separators = "=", commandDescription = "Update a user")
 public class UserUpdateCommand extends CommandBase{
     private static Logger logger = Logger.getLogger(UserUpdateCommand.class);
     private final String commandName = "userupdate";
 
     @Parameter(names="--id", description="user id")
-    private String userId;
+    public String userId;
 
     @Parameter(names="--enabled", description="enable or disable user", required=false)
     public boolean enabled;
@@ -31,7 +32,7 @@ public class UserUpdateCommand extends CommandBase{
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        User user = client.updateUser(userId, RoambiClientUtil.getUserRole(roleId), enabled);
+        User user = client.updateUser(RoambiClientUtil.getUserId(userId, client), RoambiClientUtil.validateRole(roleId), enabled);
         logger.info(user.toJSON().toString());
     }
 }
