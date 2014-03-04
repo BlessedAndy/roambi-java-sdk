@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.cli.client;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.exceptions.PortalContentNotFoundException;
@@ -118,6 +120,18 @@ public class RoambiClientUtil {
         return result;
     }
 
+    public static String getUserId(String id, RoambiApiClient client) throws ApiException {
+        PagedList<User> pagedList = client.getUsers();
+        List<User> userList = pagedList.getResults();
+
+        for(User user:userList) {
+            if(id.equals(user.getPrimaryEmail()) || id.equals(user.getUid())) {
+                return user.getUid();
+            }
+        }
+        return id;
+    }
+
     public static List<String> getUserIds(List<String> users, RoambiApiClient client) throws ApiException {
         PagedList<User> pagedList = client.getUsers();
         List<User> userList = pagedList.getResults();
@@ -146,6 +160,17 @@ public class RoambiClientUtil {
         }
 
         return results;
+    }
+
+    public static String getGroupId(String id, RoambiApiClient client) throws ApiException {
+        List<Group> groupList = client.getGroups();
+
+        for(Group group:groupList) {
+            if(id.equals(group.getName()) || id.equals(group.getUid())) {
+                return group.getUid();
+            }
+        }
+        return id;
     }
 
     public static List<String> getGroupIds(List<String> groups, RoambiApiClient client) throws ApiException {
@@ -180,5 +205,15 @@ public class RoambiClientUtil {
             }
         }
         return foundItem;
+    }
+
+    public static Role validateRole(String roleId) {
+        Role role = Role.VIEWER;
+        if("publisher".equalsIgnoreCase(roleId)) {
+            role = Role.PUBLISHER;
+        } else if("administrator".equalsIgnoreCase(roleId)) {
+            role = Role.ADMINISTRATOR;
+        }
+        return role;
     }
 }
