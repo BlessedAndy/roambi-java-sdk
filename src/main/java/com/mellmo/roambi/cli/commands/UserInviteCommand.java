@@ -6,6 +6,10 @@ package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.model.Role;
+import com.mellmo.roambi.api.model.User;
+import com.mellmo.roambi.cli.client.RoambiClientUtil;
+import javassist.tools.web.Viewer;
 import org.apache.log4j.Logger;
 
 public class UserInviteCommand extends CommandBase{
@@ -22,8 +26,8 @@ public class UserInviteCommand extends CommandBase{
     @Parameter(names="--familyName", description="new user's family name")
     public String familyName;
 
-    @Parameter(names="--role", description="new users role [stand|publisher|admin]", required=false)
-    public String role;
+    @Parameter(names="--role", description="new users role [viewer|publisher|administrator]", required=false)
+    public String roleId;
 
     @Override
     public String getName() {
@@ -32,6 +36,8 @@ public class UserInviteCommand extends CommandBase{
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        //TODO:
+        Role role = RoambiClientUtil.getUserRole(roleId);
+        User user = client.inviteUser(email, givenName, familyName, role);
+        logger.info(user.toJSON().toString());
     }
 }

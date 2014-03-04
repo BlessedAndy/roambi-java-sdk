@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.cli.client;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.exceptions.PortalContentNotFoundException;
@@ -180,5 +182,15 @@ public class RoambiClientUtil {
             }
         }
         return foundItem;
+    }
+
+    public static Role getUserRole(String roleId) {
+        Role role = Role.VIEWER;
+        if("publisher".equalsIgnoreCase(roleId)) {
+            role = Role.PUBLISHER;
+        } else if("administrator".equalsIgnoreCase(roleId)) {
+            role = Role.ADMINISTRATOR;
+        }
+        return role;
     }
 }

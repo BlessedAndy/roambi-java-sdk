@@ -6,6 +6,7 @@ package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.model.Group;
 import org.apache.log4j.Logger;
 
 public class GroupCreateCommand extends CommandBase {
@@ -22,6 +23,7 @@ public class GroupCreateCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        //TODO:
+       Group group = client.createGroup(groupName);
+       logger.info(group.toJSON().toString());
     }
 }

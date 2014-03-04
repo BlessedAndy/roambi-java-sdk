@@ -6,6 +6,7 @@ package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.model.Group;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -27,6 +28,7 @@ public class GroupRemoveCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        //TODO:
+        Group group = client.removeGroupUsers(groupId, users.toArray(new String[0]));
+        logger.info(group.toJSON().toString());
     }
 }

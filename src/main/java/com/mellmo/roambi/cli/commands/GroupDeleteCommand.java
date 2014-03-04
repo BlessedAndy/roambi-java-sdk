@@ -23,6 +23,6 @@ public class GroupDeleteCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        //TODO:
+        client.deleteGroup(groupId);
     }
 }

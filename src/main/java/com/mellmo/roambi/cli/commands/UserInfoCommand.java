@@ -6,6 +6,7 @@ package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.model.User;
 import org.apache.log4j.Logger;
 
 public class UserInfoCommand extends CommandBase {
@@ -22,6 +23,7 @@ public class UserInfoCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        //TODO:
+        User user = client.getUserInfo(userId);
+        logger.info(user.toJSON().toString());
     }
 }
