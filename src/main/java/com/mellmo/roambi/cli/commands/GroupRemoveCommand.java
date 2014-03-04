@@ -5,20 +5,23 @@
 package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.Group;
+import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import org.apache.log4j.Logger;
 
 import java.util.List;
 
+@Parameters(separators = "=", commandDescription = "Remove user from group(s)")
 public class GroupRemoveCommand extends CommandBase {
     private static Logger logger = Logger.getLogger(UserUpdateCommand.class);
-    private final String commandName = "groupRemove";
+    private final String commandName = "groupremove";
 
     @Parameter(names="--id", description="groupId if removing from a single group.", required=false)
     private String groupId;
 
-    @Parameter(names="--users", variableArity = true, description = "user ids") //maybe use check allow email
+    @Parameter(names="--users", variableArity = true, description = "user ids")
     private List<String> users;
 
     @Override
@@ -28,7 +31,16 @@ public class GroupRemoveCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        Group group = client.removeGroupUsers(groupId, users.toArray(new String[0]));
-        logger.info(group.toJSON().toString());
+
+        List<String> userIds = RoambiClientUtil.getUserIds(users, client);
+
+        if(groupId != null) {
+            Group group = client.removeGroupUsers(RoambiClientUtil.getGroupId(groupId, client), userIds.toArray(new String[0]));
+            logger.info(group.toJSON().toString());
+        } else {
+            for(String s:userIds) {
+                client.removeUserFromAllGroups(s);
+            }
+        }
     }
 }

@@ -162,6 +162,17 @@ public class RoambiClientUtil {
         return results;
     }
 
+    public static String getGroupId(String id, RoambiApiClient client) throws ApiException {
+        List<Group> groupList = client.getGroups();
+
+        for(Group group:groupList) {
+            if(id.equals(group.getName()) || id.equals(group.getUid())) {
+                return group.getUid();
+            }
+        }
+        return id;
+    }
+
     public static List<String> getGroupIds(List<String> groups, RoambiApiClient client) throws ApiException {
         List<Group> groupList = client.getGroups();
         List<String> results = new ArrayList<String>();

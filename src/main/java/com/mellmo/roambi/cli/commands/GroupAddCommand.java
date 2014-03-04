@@ -5,16 +5,19 @@
 package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.Group;
+import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import org.apache.log4j.Logger;
 
 import java.util.Collections;
 import java.util.List;
 
+@Parameters(separators = "=", commandDescription = "Add users to a group")
 public class GroupAddCommand extends CommandBase {
     private static Logger logger = Logger.getLogger(UserUpdateCommand.class);
-    private final String commandName = "groupAdd";
+    private final String commandName = "groupadd";
 
     @Parameter(names="--id", description="groupId")
     private String groupId;
@@ -29,7 +32,8 @@ public class GroupAddCommand extends CommandBase {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
-        Group group = client.addGroupUsers(groupId, users.toArray(new String[0]));
+        List<String> userIds = RoambiClientUtil.getUserIds(users, client);
+        Group group = client.addGroupUsers(RoambiClientUtil.getGroupId(groupId, client), userIds.toArray(new String[0]));
         logger.info(group.toJSON().toString());
     }
 }
