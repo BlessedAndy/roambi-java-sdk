@@ -4,6 +4,12 @@
  */
 package com.mellmo.roambi.api.model;
 
+import java.util.Collections;
+import java.util.Map;
+
+import org.apache.commons.collections.map.CaseInsensitiveMap;
+import org.apache.commons.lang.StringUtils;
+
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.utils.JsonUtils;
 
@@ -18,6 +24,13 @@ public class Role implements IBaseModel {
 	public static final Role VIEWER = new Role("standard", "Viewer");
 	public static final Role PUBLISHER = new Role("publisher", "Publisher");
 	public static final Role ADMINISTRATOR = new Role("admin", "Administrator");
+
+	@SuppressWarnings("unchecked")
+	private transient static final Map rolesMap = Collections.unmodifiableMap(Collections.synchronizedMap(new CaseInsensitiveMap() {{
+		put(VIEWER.getLabel(), VIEWER.getUid());
+		put(PUBLISHER.getLabel(), PUBLISHER.getUid());
+		put(ADMINISTRATOR.getLabel(), ADMINISTRATOR.getUid());
+	}}));
 
 	final private String uid;
 	final private String label;
@@ -37,6 +50,10 @@ public class Role implements IBaseModel {
 	
 	public static Role getRole(final JsonObject json) {
 		return json != null ? new Role(JsonUtils.getString(json, "uid"), JsonUtils.getString(json, LABEL)) : null;
+	}
+	
+	public static String getRoleUid(final String label) {
+		return rolesMap.containsKey(label) ? (String) rolesMap.get(label) : StringUtils.defaultString(label);
 	}
 	
 	@Override

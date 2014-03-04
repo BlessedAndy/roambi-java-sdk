@@ -232,6 +232,10 @@ public class RoambiApiClient extends RESTClient {
 		return updateUser(userUid, toParam(UserAccount.ROLE, role));
 	}
 	
+	public User setUserRole(final String userUid, final String role) throws ApiException {
+		return updateUser(userUid, toParam(UserAccount.ROLE, Role.getRoleUid(role)));
+	}
+	
 	public User enableUser(final String userUid) throws ApiException {
 		return updateUser(userUid, toParam(UserAccount.ENABLED, true));
 	}
@@ -242,6 +246,10 @@ public class RoambiApiClient extends RESTClient {
 	
 	public User updateUser(final String userUid, final Role role, final boolean enabled) throws ApiException {
 		return updateUser(userUid, toParam(UserAccount.ROLE, role), toParam(UserAccount.ENABLED, enabled));
+	}
+	
+	public User updateUser(final String userUid, final String role, final boolean enabled) throws ApiException {
+		return updateUser(userUid, toParam(UserAccount.ROLE, Role.getRoleUid(role)), toParam(UserAccount.ENABLED, enabled));
 	}
 	
     private User updateUser(final String userUid, final NameValuePair... params) throws ApiException {
