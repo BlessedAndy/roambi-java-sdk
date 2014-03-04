@@ -71,6 +71,27 @@ public class Group {
 		return false;
 	}
 
+    public JsonObject toJSON() throws Exception{
+
+        JsonObject resultJson = new JsonObject();
+        JsonObject groupJson = new JsonObject();
+
+        groupJson.addProperty("uid", this.getUid());
+        groupJson.addProperty("name", this.getName());
+        groupJson.addProperty("description", this.getDescription());
+        groupJson.add("users", getJSONUsers(getUsers()));
+        resultJson.add("group", groupJson);
+        return resultJson;
+    }
+
+    private static JsonArray getJSONUsers(List<User> users) throws Exception{
+        JsonArray userArray = new JsonArray();
+        for(User u:users) {
+            userArray.add((JsonElement)u.toJSON());
+        }
+        return userArray;
+    }
+
 	public static List<Group> fromApiResponseToGroups(final String json) {
         
         List<Group> groups = new ArrayList<Group>();

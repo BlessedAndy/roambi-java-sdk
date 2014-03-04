@@ -1,3 +1,7 @@
+/**
+ * This sample code and information are provided "as is" without warranty of any kind, either expressed or implied, including
+ * but not limited to the implied warranties of merchantability and/or fitness for a particular purpose.
+ */
 package com.mellmo.roambi.api.model;
 
 import java.util.ArrayList;
@@ -67,13 +71,27 @@ public class User implements IBaseModel {
 		JsonObject responseProps = ResponseUtils.responseToObject(json).get("resources").getAsJsonObject();
 		return getUser(responseProps);
 	}
+
+    public JsonObject toJSON() throws Exception {
+        JsonObject resultJson = new JsonObject();
+        JsonObject userJson = new JsonObject();
+
+        userJson.addProperty("uid", this.getUid());
+        userJson.addProperty("given_name", this.getGivenName());
+        userJson.addProperty("family_name", this.getFamilyName());
+        userJson.addProperty("primary_email", this.getPrimaryEmail());
+
+        resultJson.add("user", userJson);
+
+        return resultJson;
+    }
 	
 	public static User fromApiResponseToUser(final String json) {
 		final JsonObject userJson = ResponseUtils.responseToObject(json).get("user").getAsJsonObject();
 		final User user = getUser(userJson);
 		return user;
 	}
-	
+
 	public static User getUser(final JsonObject json) {
 		final User user = new User();
 		user.setUid(json.get("uid").getAsString());
