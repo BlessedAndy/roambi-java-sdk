@@ -11,5 +11,6 @@ package com.mellmo.roambi.api.model;
  */
 public interface IBaseModel {
 
+	public static final String UID = "uid"; 
 	public String getUid();
 }

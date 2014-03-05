@@ -14,15 +14,19 @@ import com.mellmo.roambi.api.utils.ResponseUtils;
 
 public class User implements IBaseModel {
 	
+	public static final String USER = "user";
+	public static final String USER_ACCOUNT = "user_account";
 	public static final String FAMILY_NAME = "family_name";
 	public static final String GIVEN_NAME = "given_name";
 	public static final String PRIMARY_EMAIL = "primary_email";
+	private static final String NAME = "name";
 
-	private String uid;
+	private String uid = null;
 	private String givenName;
 	private String familyName;
 	private String primaryEmail;
 	private UserAccount userAccount;
+	private String name = null;
 
 	public User() {
 	}
@@ -35,15 +39,19 @@ public class User implements IBaseModel {
 		return uid;
 	}
 
-	public void setUid(String uid) {
+	private void setUid(String uid) {
 		this.uid = uid;
+	}
+	
+	public String getName() {
+		return this.name;
 	}
 
 	public String getGivenName() {
 		return givenName;
 	}
 
-	public void setGivenName(String givenName) {
+	private void setGivenName(String givenName) {
 		this.givenName = givenName;
 	}
 
@@ -51,7 +59,7 @@ public class User implements IBaseModel {
 		return familyName;
 	}
 
-	public void setFamilyName(String familyName) {
+	private void setFamilyName(String familyName) {
 		this.familyName = familyName;
 	}
 
@@ -59,7 +67,7 @@ public class User implements IBaseModel {
 		return primaryEmail;
 	}
 
-	public void setPrimaryEmail(String primaryEmail) {
+	private void setPrimaryEmail(String primaryEmail) {
 		this.primaryEmail = primaryEmail;
 	}
 	
@@ -72,33 +80,40 @@ public class User implements IBaseModel {
 		return getUser(responseProps);
 	}
 
-    public JsonObject toJSON() throws Exception {
+    public JsonObject toJSON() {
         JsonObject resultJson = new JsonObject();
         JsonObject userJson = new JsonObject();
 
-        userJson.addProperty("uid", this.getUid());
-        userJson.addProperty("given_name", this.getGivenName());
-        userJson.addProperty("family_name", this.getFamilyName());
-        userJson.addProperty("primary_email", this.getPrimaryEmail());
+        userJson.addProperty(UID, this.getUid());
+        if (this.name != null) {
+        	userJson.addProperty(NAME, this.name);
+        }
+        userJson.addProperty(GIVEN_NAME, this.getGivenName());
+        userJson.addProperty(FAMILY_NAME, this.getFamilyName());
+        userJson.addProperty(PRIMARY_EMAIL, this.getPrimaryEmail());
+        if (this.userAccount != null) {
+        	userJson.add(USER_ACCOUNT, this.userAccount.toJSON());
+        }
 
-        resultJson.add("user", userJson);
+        resultJson.add(USER, userJson);
 
         return resultJson;
     }
 	
 	public static User fromApiResponseToUser(final String json) {
-		final JsonObject userJson = ResponseUtils.responseToObject(json).get("user").getAsJsonObject();
+		final JsonObject userJson = ResponseUtils.responseToObject(json).get(USER).getAsJsonObject();
 		final User user = getUser(userJson);
 		return user;
 	}
 
 	public static User getUser(final JsonObject json) {
 		final User user = new User();
-		user.setUid(json.get("uid").getAsString());
-		user.setFamilyName(json.get(FAMILY_NAME).getAsString());
-		user.setGivenName(json.get(GIVEN_NAME).getAsString());
-		user.setPrimaryEmail(json.get(PRIMARY_EMAIL).getAsString());
-		user.userAccount = UserAccount.getUserAccount(JsonUtils.getJson(json, "user_account"));
+		user.uid = json.get(UID).getAsString();
+		user.familyName = json.get(FAMILY_NAME).getAsString();
+		user.givenName = json.get(GIVEN_NAME).getAsString();
+		user.primaryEmail = json.get(PRIMARY_EMAIL).getAsString();
+		user.name = JsonUtils.getString(json, NAME);
+		user.userAccount = UserAccount.getUserAccount(JsonUtils.getJson(json, USER_ACCOUNT));
 		return user;
 	}
 
@@ -123,7 +138,7 @@ public class User implements IBaseModel {
 	private static User fromApiListResponse(JsonObject responseProps) {
 		User user = new User();
 		
-		user.setUid(responseProps.get("uid").getAsString());
+		user.setUid(responseProps.get(UID).getAsString());
         user.setFamilyName(responseProps.get("last_name").getAsString());
         user.setGivenName(responseProps.get("first_name").getAsString());
         user.setPrimaryEmail(responseProps.get("email_address").getAsString());

@@ -204,8 +204,7 @@ public class FileResourcesTest extends ApiClientTestBase {
         String file_uid= getPermissionsFileUID();// "518c26a2e4b0070c8f380691";
         String user_uid= getPermissionsUserUID();//"17feaa6c-0610-48fb-a798-e0ca01d19ff4";
 
-        User user = new User();
-        user.setUid(user_uid); //the Publisher user
+        User user = new User(user_uid); //the Publisher user
 
         //make sure file is there
         ContentItem item = client.getFileInfo(file_uid);
@@ -233,8 +232,8 @@ public class FileResourcesTest extends ApiClientTestBase {
     public void testGroupPermission() throws ApiException {
         String group_uid = getPermissionsGroupUID();
         String file_uid= getPermissionsFileUID();
-        Group group = new Group();
-        group.setUid(group_uid); //a group uid
+        Group group = new Group(group_uid); //a group uid
+//        group.setUid(group_uid); 
 
         //make sure file is there
         ContentItem item = client.getFileInfo(file_uid);

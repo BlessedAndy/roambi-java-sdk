@@ -39,17 +39,11 @@ public class UserAccount {
 	public Role getRole() {
 		return role;
 	}
-	public void setRole(Role role) {
-		this.role = role;
-	}
 	public Status getStatus() {
 		return Status.valueOf(this.status.toUpperCase());
 	}
 	public boolean isEnabled() {
 		return enabled;
-	}
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
 	}
 	
 	public static UserAccount getUserAccount(final JsonObject json) {
@@ -63,5 +57,17 @@ public class UserAccount {
 			return userAccount;
 		}
 		return null;
+	}
+	
+	public JsonObject toJSON() {
+		final JsonObject userAccountJson = new JsonObject();
+		if (this.role != null) {
+			userAccountJson.add(ROLE, this.role.toJSON());
+		}
+		if (this.status != null) {
+			userAccountJson.addProperty(STATUS, this.status);
+		}
+		userAccountJson.addProperty(ENABLED, this.enabled);
+		return userAccountJson;
 	}
 }

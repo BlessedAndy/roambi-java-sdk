@@ -49,7 +49,7 @@ public class Role implements IBaseModel {
 	}
 	
 	public static Role getRole(final JsonObject json) {
-		return json != null ? new Role(JsonUtils.getString(json, "uid"), JsonUtils.getString(json, LABEL)) : null;
+		return json != null ? new Role(JsonUtils.getString(json, UID), JsonUtils.getString(json, LABEL)) : null;
 	}
 	
 	public static String getRoleUid(final String label) {
@@ -59,5 +59,12 @@ public class Role implements IBaseModel {
 	@Override
 	public boolean equals(final Object role) {
 		return role instanceof Role && this.uid.equals(((Role)role).getUid()) && this.label.equals(((Role)role).getLabel());
+	}
+	
+	public JsonObject toJSON() {
+		final JsonObject roleJson = new JsonObject();
+		roleJson.addProperty(UID, this.uid);
+		roleJson.addProperty(LABEL, this.label);
+		return roleJson;
 	}
 }

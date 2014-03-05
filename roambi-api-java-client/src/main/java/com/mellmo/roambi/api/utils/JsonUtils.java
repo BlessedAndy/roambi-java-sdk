@@ -4,6 +4,13 @@
  */
 package com.mellmo.roambi.api.utils;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
+import javax.xml.bind.DatatypeConverter;
+
 import org.apache.commons.httpclient.NameValuePair;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -41,5 +48,19 @@ public class JsonUtils {
 	
 	public static boolean hasBoolean(final JsonObject json, final String name) {
 		return json != null && json.has(name) && json.get(name).isJsonPrimitive() && json.get(name).getAsJsonPrimitive().isBoolean();
+	}
+	
+	public static Date getDate(final JsonObject json, final String name) {
+		final String stringValue = getString(json, name);
+		return stringValue != null ? DatatypeConverter.parseDateTime(stringValue).getTime() : null;
+	}
+	
+	public static String printDate(final Date time) {
+		if (time != null) {
+			final Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
+			calendar.setTime(time);
+			return DatatypeConverter.printDateTime(calendar);
+		}
+		return null;
 	}
 }
