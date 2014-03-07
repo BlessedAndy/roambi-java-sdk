@@ -27,7 +27,7 @@ public class ApiClientTestBase implements RoambiApiApplication {
 	public static final int API_VERSION = 1;
 
 	protected static transient Properties props = new Properties();
-	protected Logger log = Logger.getLogger(GetUserResourcesTest.class);
+	protected Logger log = Logger.getLogger(ApiClientTestBase.class);
 	protected static transient RoambiApiClient client = null;
 	protected static transient User currentUser = null;
 	
