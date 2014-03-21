@@ -39,7 +39,7 @@ public class AddPermissionCommand extends CommandBase {
     private List<String> userIds;
 
     @Parameter(names="--access", description = "'view' or 'publish'")
-    private String mode = "read";
+    private String mode = "view";
 
     @Override
     public String getName() {
@@ -47,7 +47,7 @@ public class AddPermissionCommand extends CommandBase {
     }
 
     protected RoambiFilePermission getPermission(String p) {
-        return "write".equals(mode)? RoambiFilePermission.WRITE:RoambiFilePermission.READ;
+        return "publish".equalsIgnoreCase(mode)? RoambiFilePermission.WRITE:RoambiFilePermission.READ;
     }
 
     @Override
@@ -63,6 +63,7 @@ public class AddPermissionCommand extends CommandBase {
         logger.info("target: " + remoteUid);
         logger.info("users: " + userIds.toString());
         logger.info("groups: " + groupIds.toString());
+        logger.info("access: " + mode);
 
         client.currentUser();
         if(groupIds.size() > 0 || userIds.size() > 0){
