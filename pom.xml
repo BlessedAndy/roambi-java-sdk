@@ -105,7 +105,11 @@
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
                         <manifestEntries>
-                            <build_number>${env.BUILD_NUMBER}</build_number>
+                            <build_key>${roambi.buildKey}</build_key>
+                            <build_number>${roambi.buildNumber}</build_number>
+                            <build_timestamp>${roambi.buildTimestamp}</build_timestamp>
+                            <scm_branch>${roambi.scm-branch}</scm_branch>
+                            <scm_commit>${roambi.scm-commit}</scm_commit>
                         </manifestEntries>
                     </archive>
                 </configuration>
@@ -136,7 +140,11 @@
                                     <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                                 </manifest>
                                 <manifestEntries>
-                                    <build_number>${env.BUILD_NUMBER}</build_number>
+		                            <build_key>${roambi.buildKey}</build_key>
+		                            <build_number>${roambi.buildNumber}</build_number>
+		                            <build_timestamp>${roambi.buildTimestamp}</build_timestamp>
+		                            <scm_branch>${roambi.scm-branch}</scm_branch>
+		                            <scm_commit>${roambi.scm-commit}</scm_commit>
                                 </manifestEntries>
                             </archive>
                         </configuration>
