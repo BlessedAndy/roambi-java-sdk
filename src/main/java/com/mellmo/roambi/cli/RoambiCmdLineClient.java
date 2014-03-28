@@ -5,18 +5,22 @@
 package com.mellmo.roambi.cli;
 
 
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+import org.reflections.Reflections;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.cli.client.RoambiClientWrapper;
 import com.mellmo.roambi.cli.commands.CommandBase;
 import com.mellmo.roambi.cli.commands.ConfigureCommand;
-import org.reflections.Reflections;
-
-import java.util.*;
-import java.lang.reflect.Modifier;
-
-import org.apache.log4j.Logger;
+import com.mellmo.roambi.cli.commands.ShowVersionCommand;
 
 /**
  * Created with IntelliJ IDEA.
@@ -41,7 +45,6 @@ public class RoambiCmdLineClient {
 
     @Parameter(names = "--help", description = "Shows help", help = true)
     private boolean help;
-
 
 
     public RoambiCmdLineClient (String [] args) {
@@ -93,7 +96,12 @@ public class RoambiCmdLineClient {
             CommandBase cb = commands.get(cmd);
             if(cb==null || cb.getHelp()) {
                 jct.usage(cb.getName());
-            } else {
+            }
+            else if (cb instanceof ShowVersionCommand) {
+            	((ShowVersionCommand)cb).execute(null);
+            	return;
+            }
+            else {
                 //kludge
                 if(cb instanceof ConfigureCommand) {
                    ((ConfigureCommand)cb).setPropertiesPath(propertiesFile);
