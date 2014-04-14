@@ -382,7 +382,7 @@ public class RoambiApiClient extends RESTClient {
         groups.add(group.getUid());
         return addPermission(contentItem, groups, null, permission);
     }
-
+    
     public ContentItem addPermission(ContentItem contentItem, User user, RoambiFilePermission permission) throws ApiException {
         checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
         checkArgument(!Strings.isNullOrEmpty(user.getUid()), "User uid is not set.");
@@ -490,7 +490,7 @@ public class RoambiApiClient extends RESTClient {
     }
 
 
-    public ContentItem updateFileData(ContentItem targetFile, InputStream inputStream, String contentType) throws ApiException, FileNotFoundException {
+    public ContentItem updateFileData(ContentItem targetFile, InputStream inputStream, String contentType) throws ApiException {
         checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
 
         String url = RoambiApiResource.UPDATE_FILE_DATA.url(baseServiceUrl, apiVersion, getAccountUid(), targetFile.getUid());

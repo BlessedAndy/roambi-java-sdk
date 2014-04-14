@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.utils.JsonUtils;
@@ -34,6 +34,11 @@ public class Role implements IBaseModel {
 
 	final private String uid;
 	final private String label;
+	
+	public Role(final String uid) {
+		this.uid = uid;
+		this.label = uid;
+	}
 	
 	public Role(final String uid, final String label) {
 		this.uid = uid;

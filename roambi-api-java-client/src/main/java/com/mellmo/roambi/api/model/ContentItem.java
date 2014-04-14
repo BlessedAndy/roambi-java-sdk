@@ -31,6 +31,11 @@ public class ContentItem implements IBaseModel {
 
     public ContentItem() {
 	}
+    
+    public ContentItem(final String uid) {
+        this.uid = uid;
+        this.name = null;
+    }
 
     public ContentItem(String uid, String name) {
         setUid(uid);
