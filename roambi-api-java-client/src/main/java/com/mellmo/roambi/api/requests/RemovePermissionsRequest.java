@@ -24,8 +24,8 @@ public class RemovePermissionsRequest {
 	}
 
 	public RemovePermissionsRequest(List<String> users, List<String> groups) {
-		this.users = users;
-		this.groups = groups;
+		this.users = users != null ? users : new ArrayList<String>();
+		this.groups = groups != null ? groups : new ArrayList<String>();
 	}
 
 	public List<String> getUsers() {

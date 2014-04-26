@@ -10,12 +10,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.activation.MimetypesFileTypeMap;
 
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
@@ -26,16 +23,9 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
-import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.methods.RequestEntity;
-import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.FilePart;
-import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
-import org.apache.commons.httpclient.methods.multipart.Part;
-import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.log4j.Logger;
 
@@ -47,6 +37,7 @@ import com.mellmo.roambi.api.model.Account;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.api.model.Group;
+import com.mellmo.roambi.api.model.IBaseModel;
 import com.mellmo.roambi.api.model.PagedList;
 import com.mellmo.roambi.api.model.Portal;
 import com.mellmo.roambi.api.model.RoambiFilePermission;
@@ -54,9 +45,7 @@ import com.mellmo.roambi.api.model.Role;
 import com.mellmo.roambi.api.model.User;
 import com.mellmo.roambi.api.model.UserAccount;
 import com.mellmo.roambi.api.requests.AddPermissionsRequest;
-import com.mellmo.roambi.api.requests.AddPermissionsRequest.FilePermission;
 import com.mellmo.roambi.api.requests.RemovePermissionsRequest;
-import com.mellmo.roambi.api.utils.JsonUtils;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
 public class RoambiApiClient extends RESTClient {
@@ -157,20 +146,20 @@ public class RoambiApiClient extends RESTClient {
 	
 	public Group createGroup(final String name) throws ApiException {
 		final String url = RoambiApiResource.LIST_GROUPS.url(baseServiceUrl, apiVersion, getAccountUid());
-		final HttpMethodBase method = buildPostMethod(url, toParam(Group.NAME, name));
+		final HttpMethodBase method = buildPostMethod(url, checkNull(Group.NAME, name));
 		return invokeMethodGetGroupResponse(method);
 	}
 		
 	public Group setGroupInfo(final String groupUid, final String name, final String description) throws ApiException {
-		return updateGroupInfo(groupUid, toParam(Group.NAME, name), toParam(Group.DESCRIPTION, description));
+		return updateGroupInfo(groupUid, checkNull(Group.NAME, name), checkNull(Group.DESCRIPTION, description));
 	}
 
 	public Group setGroupName(final String groupUid, final String name) throws ApiException {
-		return updateGroupInfo(groupUid, toParam(Group.NAME, name));
+		return updateGroupInfo(groupUid, checkNull(Group.NAME, name));
 	}
 	
 	public Group setGroupDescription(final String groupUid, final String description) throws ApiException {
-		return updateGroupInfo(groupUid, toParam(Group.DESCRIPTION, description));
+		return updateGroupInfo(groupUid, checkNull(Group.DESCRIPTION, description));
 	}
 	
 	private Group updateGroupInfo(final String groupUid, final NameValuePair... params) throws ApiException {
@@ -180,7 +169,7 @@ public class RoambiApiClient extends RESTClient {
 	}
 	
 	public void deleteGroup(final String groupUid) throws ApiException {
-		getDeleteResourceResponse(RoambiApiResource.GROUPS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid), "deleteGroup");
+		invokeMethodGetDeleteResourceResponse(RoambiApiResource.GROUPS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid), "deleteGroup");
 	}
 	
 	public Group addGroupUsers(final String groupUid, final String... users) throws ApiException {
@@ -193,7 +182,7 @@ public class RoambiApiClient extends RESTClient {
 	
 	private Group updateGroupUsers(final RoambiApiResource endpoint, final String groupUid, final String... users) throws ApiException {
 		final String url = endpoint.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid);
-		final HttpMethodBase method = RESTClient.buildPostMethod(getAccessToken(), url, APPLICATION_JSON, Group.USERS, users);
+		final HttpMethodBase method = buildPostMethod(url, Group.USERS, users);
 		return invokeMethodGetGroupResponse(method);
 	}
 	
@@ -207,19 +196,19 @@ public class RoambiApiClient extends RESTClient {
 	}
 	
 	public void removeGroupUser(final String groupUid, final String userUid) throws ApiException {
-		getDeleteResourceResponse(RoambiApiResource.GROUPS_UID_USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid, userUid), "removeGroupUser");
+		invokeMethodGetDeleteResourceResponse(RoambiApiResource.GROUPS_UID_USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), groupUid, userUid), "removeGroupUser");
 	}
 	
 	public void removeUserFromAllGroups(final String userUid) throws ApiException {
-		getDeleteResourceResponse(RoambiApiResource.GROUPS_USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), userUid), "removeUserFromAllGroups");
+		invokeMethodGetDeleteResourceResponse(RoambiApiResource.GROUPS_USERS_UID.url(baseServiceUrl, apiVersion, getAccountUid(), userUid), "removeUserFromAllGroups");
 	}
 	
 	public User inviteUser(final String primary_email, final String given_name, final String family_name, final Role role) throws ApiException {
 		final String url = RoambiApiResource.LIST_USERS.url(baseServiceUrl, apiVersion, getAccountUid());
-		final HttpMethodBase method = buildPostMethod(url, toParam(User.PRIMARY_EMAIL, primary_email),
-														   toParam(User.GIVEN_NAME, given_name),
-														   toParam(User.FAMILY_NAME, family_name),
-														   toParam(UserAccount.ROLE, role));
+		final HttpMethodBase method = buildPostMethod(url, checkNull(User.PRIMARY_EMAIL, primary_email),
+														   checkNull(User.GIVEN_NAME, given_name),
+														   checkNull(User.FAMILY_NAME, family_name),
+														   checkNull(UserAccount.ROLE, role));
 		return invokeMethodGetUserResponse(method);
 	}
 	
@@ -229,11 +218,11 @@ public class RoambiApiClient extends RESTClient {
 	}
 	
 	public User setUserRole(final String userUid, final Role role) throws ApiException {
-		return updateUser(userUid, toParam(UserAccount.ROLE, role));
+		return updateUser(userUid, checkNull(UserAccount.ROLE, role));
 	}
 	
 	public User setUserRole(final String userUid, final String role) throws ApiException {
-		return updateUser(userUid, toParam(UserAccount.ROLE, Role.getRoleUid(role)));
+		return updateUser(userUid, checkNull(UserAccount.ROLE, Role.getRoleUid(role)));
 	}
 	
 	public User enableUser(final String userUid) throws ApiException {
@@ -245,11 +234,11 @@ public class RoambiApiClient extends RESTClient {
 	}
 	
 	public User updateUser(final String userUid, final Role role, final boolean enabled) throws ApiException {
-		return updateUser(userUid, toParam(UserAccount.ROLE, role), toParam(UserAccount.ENABLED, enabled));
+		return updateUser(userUid, checkNull(UserAccount.ROLE, role), toParam(UserAccount.ENABLED, enabled));
 	}
 	
 	public User updateUser(final String userUid, final String role, final boolean enabled) throws ApiException {
-		return updateUser(userUid, toParam(UserAccount.ROLE, Role.getRoleUid(role)), toParam(UserAccount.ENABLED, enabled));
+		return updateUser(userUid, checkNull(UserAccount.ROLE, Role.getRoleUid(role)), toParam(UserAccount.ENABLED, enabled));
 	}
 	
     private User updateUser(final String userUid, final NameValuePair... params) throws ApiException {
@@ -294,19 +283,9 @@ public class RoambiApiClient extends RESTClient {
 	
 	public List<ContentItem> getPortalContents(final String portalUid, final String folderUid, final String fileTypes) throws ApiException {
 		LOG.debug("Getting contents for portal '" + portalUid + "' and folder '" + folderUid + "' with file_types '" + fileTypes + "'");
-		final String url = RoambiApiResource.PORTAL_CONTENTS.url(baseServiceUrl, apiVersion, getAccountUid(), portalUid);
-		final GetMethod getMethod = buildGetMethod(url);
-		final List<NameValuePair> queryParams = new ArrayList<NameValuePair>();
-		if (folderUid != null) {
-			queryParams.add(new NameValuePair(FOLDER_UID, folderUid));
-		}
-		if (fileTypes != null) {
-			queryParams.add(new NameValuePair("file_types", fileTypes));
-		}
-		if (queryParams.size() > 0) {
-			getMethod.setQueryString(queryParams.toArray(new NameValuePair[queryParams.size()]));
-		}
-		final ApiInvocationHandler handler = new ApiInvocationHandler(getMethod) {
+		final String url = RoambiApiResource.PORTAL_CONTENTS.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("portalUid", portalUid));
+		final GetMethod method = buildGetMethod(url, removeNull(nullable(FOLDER_UID, folderUid), nullable("file_types", fileTypes)));
+		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				LOG.debug("Contents JSON: " + this.method.getResponseBodyAsString());
 				return ContentItem.fromApiListResponse(this.method.getResponseBodyAsString());
@@ -316,55 +295,35 @@ public class RoambiApiClient extends RESTClient {
 	}
 	
 	public ContentItem createFolder(final ContentItem parentFolder, final String title) throws ApiException {
-		final String url = RoambiApiResource.CREATE_FOLDER.url(this.baseServiceUrl,  this.apiVersion, getAccountUid(), new String[0]);
-		final PostMethod method = buildApiPostMethod(getAccessToken(), url);
-		final List<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new NameValuePair(TITLE, title));
-		if (parentFolder != null) {
-			params.add(new NameValuePair(FOLDER_UID, parentFolder.getUid()));
-		}
-		final NameValuePair[] data = params.toArray(new NameValuePair[params.size()]);
-		method.setRequestBody(data);
+		final String url = RoambiApiResource.CREATE_FOLDER.url(this.baseServiceUrl, this.apiVersion, getAccountUid());
+		final HttpMethodBase method = buildPostMethod(url, removeNull(checkNull(TITLE, title), nullable(FOLDER_UID, parentFolder)));
 		return invokeMethodGetContentItemApiDetailsResponse(method, true);
 	}
 	
 	public ContentItem createFile(ContentItem parentFolder, String title, File sourceFile) throws FileNotFoundException, ApiException {
-        checkArgument( parentFolder != null, "parentFolder cannot be null");
-        checkArgument(! Strings.isNullOrEmpty(parentFolder.getUid()), "parentFolder UID cannot be null");
-        checkArgument(! Strings.isNullOrEmpty(title), "Title cannot be null");
-        checkArgument(sourceFile != null, "sourceFile cannot be null");
-		String url = RoambiApiResource.CREATE_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
-		PostMethod fileUpload = buildApiPostMethod(getAccessToken(), url);
-		Part[] parts = {
-				new StringPart(TITLE, title),
-				new StringPart(FOLDER_UID, parentFolder.getUid()),
-				new FilePart("upload", sourceFile, contentTypeForFile(sourceFile), null)
-		};
-		MultipartRequestEntity multipartEntity = new MultipartRequestEntity(parts, fileUpload.getParams());
-		fileUpload.setRequestEntity(multipartEntity);
-		return invokeMethodGetContentItemApiDetailsResponse(fileUpload, false);
+		final String url = RoambiApiResource.CREATE_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
+		final PostMethod method = buildPostMethod(url, toPart(checkNull(TITLE, title)), toPart(checkNull(FOLDER_UID, parentFolder)), toPart("upload", sourceFile));
+		return invokeMethodGetContentItemApiDetailsResponse(method, false);
 	}
 	
 	public void deleteFile(final String fileUid) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
-		final String url = RoambiApiResource.DELETE_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
-		LOG.debug("fileUid: " + fileUid + " " + getDeleteResourceResponse(url));
+		final String url = RoambiApiResource.DELETE_FILE.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("fileUid", fileUid));
+		LOG.debug("fileUid: " + fileUid + " " + invokeMethodGetDeleteResourceResponse(url));
 	}
 	
 	public void deleteFolder(final String folderUid) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(folderUid), "FolderUid is not set.");
-		final String url = RoambiApiResource.DELETE_FOLDER.url(baseServiceUrl, apiVersion, getAccountUid(), folderUid);
-		LOG.debug("folderUid: " + folderUid + " " + getDeleteResourceResponse(url));
+		final String url = RoambiApiResource.DELETE_FOLDER.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("folderUid", folderUid));
+		LOG.debug("folderUid: " + folderUid + " " + invokeMethodGetDeleteResourceResponse(url));
 	}
 	
-	protected void getDeleteResourceResponse(final String url, final String func) throws ApiException {
-		final String result =  getDeleteResourceResponse(url);
+	private void invokeMethodGetDeleteResourceResponse(final String url, final String func) throws ApiException {
+		final String result =  invokeMethodGetDeleteResourceResponse(url);
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(func + ": " + result);
 		}
 	}
 	
-	protected String getDeleteResourceResponse(final String url) throws ApiException {
+	private String invokeMethodGetDeleteResourceResponse(final String url) throws ApiException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(buildDeleteMethod(url)) {
 			@Override
 			public Object onSuccess() throws HttpException, IOException {
@@ -376,234 +335,109 @@ public class RoambiApiClient extends RESTClient {
 	}
 
     public ContentItem addPermission(ContentItem contentItem, Group group, RoambiFilePermission permission) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(group.getUid()), "Group uid is not set.");
-        List<String> groups = new ArrayList<String>();
-        groups.add(group.getUid());
-        return addPermission(contentItem, groups, null, permission);
+    	return addPermission(contentItem, asList("group", group), null, permission);
     }
     
     public ContentItem addPermission(ContentItem contentItem, User user, RoambiFilePermission permission) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(user.getUid()), "User uid is not set.");
-        List<String> users = new ArrayList<String>();
-        users.add(user.getUid());
-        return addPermission(contentItem, null, users, permission);
+    	return addPermission(contentItem, null, asList("user", user), permission);
     }
 
     public ContentItem addPermission(ContentItem contentItem, List<String> groups, List<String> users, RoambiFilePermission permission) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-    	final String url = getAddPermissionUrl(contentItem);
-		final PostMethod publishMethod = buildApiPostMethod(getAccessToken(), url);
-		final AddPermissionsRequest request = new AddPermissionsRequest();
-        final List<FilePermission> groupsPermission = new ArrayList<FilePermission>();
-        if (groups !=null ) {
-            for(String group:groups) {
-                groupsPermission.add(request.new FilePermission(group, permission));
-            }
-        }
-        request.setGroups(groupsPermission);
-        final List<FilePermission> usersPermission = new ArrayList<FilePermission>();
-        if (users != null) {
-            for (String user:users) {
-                usersPermission.add(request.new FilePermission(user, permission));
-            }
-        }
-        request.setUsers(usersPermission);
-		setRequesStringEntity(publishMethod, request.toJsonBody());
-		return invokeMethodGetContentItemApiDetailsResponse(publishMethod, contentItem.isFolder());
+    	checkNull("contentItem uid", contentItem);
+    	final String url = (contentItem.isFolder()?RoambiApiResource.ADD_FOLDER_PERMISSION:RoambiApiResource.ADD_PERMISSION).url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
+		final AddPermissionsRequest request = new AddPermissionsRequest(users, groups, permission);
+		final PostMethod method = buildPostMethod(url, getStringRequestEntity(TEXT_JSON, request.toJsonBody()));
+		return invokeMethodGetContentItemApiDetailsResponse(method, contentItem.isFolder());
     }
     
-    protected String getAddPermissionUrl(final ContentItem contentItem) {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-		if (contentItem.isFolder()) {
-            return RoambiApiResource.ADD_FOLDER_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
-        }
-		else {
-            return RoambiApiResource.ADD_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
-        }
-	}
-
 	public ContentItem removePermission(ContentItem contentItem, User user) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(user.getUid()), "User uid is not set.");
-        List<String> users = new ArrayList<String>();
-        users.add(user.getUid());
-        return removePermission(contentItem, new ArrayList<String>(), users);
+		return removePermission(contentItem, null, asList("user", user));
 	}
 
     public ContentItem removePermission(ContentItem contentItem, Group group) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(group.getUid()), "Group uid is not set.");
-        List<String> groups = new ArrayList<String>();
-        groups.add(group.getUid());
-        return removePermission(contentItem, groups, new ArrayList<String>());
+        return removePermission(contentItem, asList("group", group), null);
     }
 
     public ContentItem removePermission(ContentItem contentItem, List<String> groups, List<String> users) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-    	final String url = getRemovePermissionUrl(contentItem);
-        final PostMethod publishMethod = buildApiPostMethod(getAccessToken(), url);
+    	checkNull("contentItem uid", contentItem);
+    	final String url = (contentItem.isFolder()?RoambiApiResource.REMOVE_FOLDER_PERMISSION:RoambiApiResource.REMOVE_PERMISSION).url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
         final RemovePermissionsRequest request = new RemovePermissionsRequest(users, groups);
-        setRequesStringEntity(publishMethod, request.toJsonBody());
-        return invokeMethodGetContentItemApiDetailsResponse(publishMethod, contentItem.isFolder());
+        final PostMethod method = buildPostMethod(url, getStringRequestEntity(TEXT_JSON, request.toJsonBody()));
+        return invokeMethodGetContentItemApiDetailsResponse(method, contentItem.isFolder());
     }
     
-    protected String getRemovePermissionUrl(final ContentItem contentItem) {
-        checkArgument(!Strings.isNullOrEmpty(contentItem.getUid()), "ContentItem uid is not set.");
-		if (contentItem.isFolder()) {
-            return RoambiApiResource.REMOVE_FOLDER_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
-        }
-		else {
-            return RoambiApiResource.REMOVE_PERMISSION.url(baseServiceUrl, apiVersion, getAccountUid(), contentItem.getUid());
-        }
-	}
-
+    private static List<String> asList(final String name, final IBaseModel model) {
+    	List<String> list = new ArrayList<String>();
+    	list.add(checkNull(name + " uid", model).getValue());
+    	return list;
+    }
+    
 	public ContentItem updateFileName(ContentItem targetFile, String portalUid, String title) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(portalUid), "PortalUid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(title), "Title is not set.");
-
-		String url = RoambiApiResource.UPDATE_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), portalUid, targetFile.getUid());
-
-		PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
-        NameValuePair[] params = new NameValuePair[] {
-                new NameValuePair(TITLE, title)
-        };
-        setRequesStringEntity(fileUpdateMethod, JsonUtils.createJsonFromParameters(params));
-        return invokeMethodGetContentItemApiDetailsResponse(fileUpdateMethod, false);
+        final String url = RoambiApiResource.UPDATE_FILE.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("portalUid", portalUid), checkNull("targetFile", targetFile));
+        final PostMethod method = buildPostMethod(url, TEXT_JSON, checkNull(TITLE, title));
+        return invokeMethodGetContentItemApiDetailsResponse(method, false);
 	}
 
     public ContentItem updateFileDirectory(ContentItem targetFile, String portalUid, ContentItem directory) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(directory.getUid()), "directory uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(portalUid), "PortalUid uid is not set.");
-
-        String url = RoambiApiResource.UPDATE_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), portalUid, targetFile.getUid());
-
-        PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
-        NameValuePair[] params = new NameValuePair[] {
-                new NameValuePair(DIRECTORY_UID, directory.getUid())
-        };
-        setRequesStringEntity(fileUpdateMethod, JsonUtils.createJsonFromParameters(params));
-        return invokeMethodGetContentItemApiDetailsResponse(fileUpdateMethod, false);
+        final String url = RoambiApiResource.UPDATE_FILE.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("portalUid", portalUid), checkNull("targetFile", targetFile));
+        final PostMethod method = buildPostMethod(url, TEXT_JSON, checkNull(DIRECTORY_UID, directory));
+        return invokeMethodGetContentItemApiDetailsResponse(method, false);
     }
 
-
-    public ContentItem updateFileData(ContentItem targetFile, InputStream inputStream, String contentType) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
-
-        String url = RoambiApiResource.UPDATE_FILE_DATA.url(baseServiceUrl, apiVersion, getAccountUid(), targetFile.getUid());
-        PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
-
-        RequestEntity requestEntity = new InputStreamRequestEntity(inputStream, contentType);
-        fileUpdateMethod.setRequestEntity(requestEntity);
-        return invokeMethodGetContentItemApiDetailsResponse(fileUpdateMethod, false);
+    public ContentItem updateFileData(final ContentItem targetFile, final InputStream inputStream, final String contentType) throws ApiException {
+        final String url = RoambiApiResource.UPDATE_FILE_DATA.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("targetFile", targetFile));
+        checkArgument(inputStream != null, "inputStream cannot be null.");
+        final PostMethod method = buildPostMethod(url, new InputStreamRequestEntity(inputStream, checkNull("contentType", contentType).getValue()));
+        return invokeMethodGetContentItemApiDetailsResponse(method, false);
     }
 
     public ContentItem updateFileData(ContentItem targetFile, File sourceFile) throws ApiException, FileNotFoundException {
-        checkArgument(!Strings.isNullOrEmpty(targetFile.getUid()), "TargetFile uid is not set.");
-
-        String url = RoambiApiResource.UPDATE_FILE_DATA.url(baseServiceUrl, apiVersion, getAccountUid(), targetFile.getUid());
-        PostMethod fileUpdateMethod = buildApiPostMethod(getAccessToken(), url);
-        Part[] parts = {
-                new FilePart("new_file", sourceFile, contentTypeForFile(sourceFile), null),
-                new FilePart("upload", sourceFile, contentTypeForFile(sourceFile), null)
-        };
-        MultipartRequestEntity multipartEntity = new MultipartRequestEntity(parts, fileUpdateMethod.getParams());
-        fileUpdateMethod.setRequestEntity(multipartEntity);
-        return invokeMethodGetContentItemApiDetailsResponse(fileUpdateMethod, false);
+        final String url = RoambiApiResource.UPDATE_FILE_DATA.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("targetFile", targetFile));
+        final PostMethod methd = buildPostMethod(url, toPart("upload", sourceFile));
+        return invokeMethodGetContentItemApiDetailsResponse(methd, false);
     }
 
 	public ApiJob createAnalyticsFile(ContentItem sourceFile, ContentItem templateFile, ContentItem destinationFolder, String title, boolean overwrite) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(sourceFile.getUid()), "SourceFile uid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(templateFile.getUid()), "TemplateFile uid is not set.");
-
-		String url = RoambiApiResource.CREATE_ANALYTICS_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
-		PostMethod publishMethod = buildApiPostMethod(getAccessToken(), url);
-		NameValuePair[] params = new NameValuePair[] {
-			new NameValuePair(TITLE, title),
-			new NameValuePair("source_file_uid", sourceFile.getUid()),
-			new NameValuePair(TEMPLATE_UID, templateFile.getUid()),
-			new NameValuePair(OVERWRITE, Boolean.toString(overwrite)),
-			new NameValuePair(DIRECTORY_UID, destinationFolder.getUid())
-		};
-		//publishMethod.setRequestBody(JsonUtils.createJsonFromParameters(params));
-		setRequesStringEntity(publishMethod, JsonUtils.createJsonFromParameters(params));
-		ApiInvocationHandler handler = new ApiInvocationHandler(publishMethod) {
-			public Object onSuccess() throws HttpException, IOException {
-				return ContentItem.fromApiDetailsResponse(this.method.getResponseBodyAsString());
-			}
-		};
-		return (ApiJob) handler.invokeApi();
+		final String url = RoambiApiResource.CREATE_ANALYTICS_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
+		final HttpMethodBase method = buildPostMethod(url, TEXT_JSON, checkNull(TITLE, title), checkNull("source_file_uid", sourceFile), checkNull(TEMPLATE_UID, templateFile), toParam(OVERWRITE, overwrite), checkNull(DIRECTORY_UID, destinationFolder));
+		return invokeMethodGetApiJobResponse(method);
 	}
 	
 	public ApiJob createAnalyticsFile(final File sourceFile, final ContentItem templateFile, final ContentItem folder, final String title, final boolean overwrite) throws ApiException, FileNotFoundException {
-		checkArgument((templateFile != null && !Strings.isNullOrEmpty(templateFile.getUid())), "templateFile uid is not set.");
-		checkArgument((sourceFile != null && sourceFile.exists()), "sourceFile does not exist.");
-		checkArgument((folder != null && !Strings.isNullOrEmpty(folder.getUid())), "folderr uid is not set.");
-		checkArgument(!Strings.isNullOrEmpty(title), "title is not set.");
 		final String url = RoambiApiResource.CREATE_ANALYTICS_FILE.url(baseServiceUrl, apiVersion, getAccountUid());
-		final PostMethod method = buildApiPostMethod(getAccessToken(), url);
-		final NameValuePair[] params = new NameValuePair[] {
-			new NameValuePair(TITLE, title),
-			new NameValuePair(TEMPLATE_UID, templateFile.getUid()),
-			new NameValuePair(OVERWRITE, Boolean.toString(overwrite)),
-			new NameValuePair(FOLDER_UID, folder.getUid())
-		};
-		final Part[] parts = {
-			new StringPart("publish_options", JsonUtils.createJsonFromParameters(params)),
-			new FilePart("source_file", sourceFile, contentTypeForFile(sourceFile), null)
-		};
-		final MultipartRequestEntity multipartEntity = new MultipartRequestEntity(parts, method.getParams());
-		method.setRequestEntity(multipartEntity);
+		final PostMethod method = buildPostMethod(url, toPart("publish_options", checkNull(TITLE, title), checkNull(TEMPLATE_UID, templateFile), toParam(OVERWRITE, overwrite), checkNull(FOLDER_UID, folder)),
+													   toPart("source_file", sourceFile));
+		return invokeMethodGetApiJobResponse(method);
+	}
+
+	private ApiJob invokeMethodGetApiJobResponse(final HttpMethodBase method) throws ApiException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
-				return ContentItem.fromApiDetailsResponse(this.method.getResponseBodyAsString());
+				return null;
 			}
 		};
 		return (ApiJob) handler.invokeApi();
 	}
 	
     public ContentItem getFolderInfo(final String folderUid) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(folderUid), "FolderUid uid is not set.");
-
-		String url = RoambiApiResource.FOLDER_INFO.url(baseServiceUrl, apiVersion, getAccountUid(), folderUid);
+        String url = RoambiApiResource.FOLDER_INFO.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("folderUid", folderUid));
 		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(url), true);
 	}
 
     public ContentItem getFileInfo(String fileUid) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
-        String url = RoambiApiResource.FILE_INFO.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
-        return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(url), false);
+    	String url = RoambiApiResource.FILE_INFO.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("fileUid", fileUid));
+		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(url), false);
     }
 
     public ContentItem setFileInfo(String fileUid, ContentItem item) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
-        checkArgument(!Strings.isNullOrEmpty(item.getUid()), "Item uid is not set.");
-
-        String url = RoambiApiResource.FILE_INFO.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
-        PostMethod postMethod = buildApiPostMethod(getAccessToken(), url);
-
-        NameValuePair[] params = new NameValuePair[] {
-                new NameValuePair(TITLE, item.getName())
-        };
-        setRequesStringEntity(postMethod, JsonUtils.createJsonFromParameters(params));
-        return invokeMethodGetContentItemApiDetailsResponse(postMethod, false);
+        checkArgument(!Strings.isNullOrEmpty(item.getName()), "Item name is not set.");
+        final String url = RoambiApiResource.FILE_INFO.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("fileUid", fileUid));
+        final PostMethod method = buildPostMethod(url, TEXT_JSON, checkNull(TITLE, item != null ? item.getName() : null));
+        return invokeMethodGetContentItemApiDetailsResponse(method, false);
     }
 
-	private void setRequesStringEntity(final EntityEnclosingMethod method, final String entityContent) {
-		try {
-            final RequestEntity re = new StringRequestEntity(entityContent, TEXT_JSON, UTF_8);
-            method.setRequestEntity(re);
-        } catch (UnsupportedEncodingException ue) {
-            LOG.error("Unable to set request body (encoding not supported): " + ue.getLocalizedMessage());
-        }
-	}
-    
     public InputStream downloadFile(final String fileUid) throws ApiException, IOException {
-        checkArgument(!Strings.isNullOrEmpty(fileUid), "FileUid is not set.");
-		final String url = RoambiApiResource.DOWNLOAD_FILE.url(baseServiceUrl, apiVersion, getAccountUid(), fileUid);
+        final String url = RoambiApiResource.DOWNLOAD_FILE.paths(baseServiceUrl, apiVersion, getAccountUid(), checkNull("fileUid", fileUid));
 		final HttpMethodBase method = buildGetMethod(url);
 		try {
 			httpClient.executeMethod(method);
@@ -621,8 +455,7 @@ public class RoambiApiClient extends RESTClient {
 	}
 
 	public ApiJob getJob(String jobUid) throws ApiException {
-        checkArgument(!Strings.isNullOrEmpty(jobUid), "JobUid is not set.");
-		String url = RoambiApiResource.GET_JOB.url(baseServiceUrl, apiVersion, jobUid);
+		final String url = RoambiApiResource.GET_JOB.url(baseServiceUrl, apiVersion, checkNull("jobUid", jobUid).getValue());
 		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
 				return ApiJob.fromApiResponse(this.method.getResponseBodyAsStream());
@@ -778,12 +611,6 @@ public class RoambiApiClient extends RESTClient {
 		return isAuthenticated();
 	}
 
-	private PostMethod buildApiPostMethod(String accessToken, String url) {
-		PostMethod postMethod = new PostMethod(url);
-		addAuthorizationHeader(postMethod, accessToken);
-		return postMethod;
-	}
-	
 	private HttpMethodBase buildAccessTokenHttpMethod(final NameValuePair... params) {
 		final PostMethod method = new PostMethod(getTokenServerUrl());
 		method.setRequestHeader(ACCEPT, APPLICATION_JSON);
@@ -818,21 +645,6 @@ public class RoambiApiClient extends RESTClient {
 		}
 		else {
 			return serviceUrl + "/";
-		}
-	}
-
-	public static String contentTypeForFile(File file) {
-		if (file.getName().endsWith(".xls")) {
-			return "application/excel";
-		}
-		else if (file.getName().endsWith(".xlsx")) {
-			return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-		}
-		else if (file.getName().endsWith(".csv")) {
-			return "text/csv";
-		}
-		else {
-			return new MimetypesFileTypeMap().getContentType(file);
 		}
 	}
 

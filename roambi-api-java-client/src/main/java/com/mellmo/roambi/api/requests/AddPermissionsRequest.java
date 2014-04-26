@@ -13,7 +13,7 @@ import com.mellmo.roambi.api.model.RoambiFilePermission;
 
 public class AddPermissionsRequest {
 	
-	public class FilePermission {
+	public static class FilePermission {
 		public String uid;
 		public RoambiFilePermission permission;
 		
@@ -30,6 +30,21 @@ public class AddPermissionsRequest {
 		users = new ArrayList<FilePermission>();
 		groups = new ArrayList<FilePermission>();
 	}
+	
+	public AddPermissionsRequest(final List<String> users, final List<String> groups, RoambiFilePermission permission) {
+		this.users = asList(users, permission);
+		this.groups = asList(groups, permission);
+	}
+	
+	private static List<FilePermission> asList(final List<String> targets, final RoambiFilePermission permission) {
+    	final List<FilePermission> permissions = new ArrayList<FilePermission>();
+    	if (targets !=null ) {
+            for(String group:targets) {
+            	permissions.add(new FilePermission(group, permission));
+            }
+        }
+    	return permissions;
+    }
 
 	public AddPermissionsRequest(List<FilePermission> users, List<FilePermission> groups) {
 		this.users = users;

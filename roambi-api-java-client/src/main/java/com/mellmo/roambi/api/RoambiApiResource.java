@@ -6,6 +6,15 @@ package com.mellmo.roambi.api;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Arrays;
+import java.util.Collection;
+
+import org.apache.commons.collections.TransformerUtils;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.PredicateUtils;
+import org.apache.commons.collections4.Transformer;
+import org.apache.commons.httpclient.NameValuePair;
+
 import com.google.common.base.Strings;
 
 public enum RoambiApiResource {
@@ -188,6 +197,15 @@ public enum RoambiApiResource {
 	protected static final String ACCOUNTS = "accounts";
 
 	public abstract String url(String baseUrl, int apiVersion, String accountUid, String...params);
+	
+	public String paths(String baseUrl, int apiVersion, String accountUid, NameValuePair... params) {
+		return url(baseUrl, apiVersion, accountUid, CollectionUtils.collect(Arrays.asList(params), new Transformer<NameValuePair, String>() {
+			@Override
+			public String transform(NameValuePair param) {
+				return param.getValue();
+			}
+		}).toArray(new String[params.length]));
+	}
 
 	private static String normalizeServiceUrl(String serviceUrl) {
 		if (serviceUrl.endsWith("/")) {
