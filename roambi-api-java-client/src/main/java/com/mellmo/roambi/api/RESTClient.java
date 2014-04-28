@@ -17,6 +17,7 @@ import java.util.List;
 import javax.activation.MimetypesFileTypeMap;
 
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.collections4.PredicateUtils;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NameValuePair;
@@ -31,6 +32,8 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.util.EncodingUtil;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.common.base.Strings;
@@ -84,17 +87,6 @@ public abstract class RESTClient {
 		return method;
 	}
 	
-	public static NameValuePair checkNull(final String name, final IBaseModel model) {
-		checkArgument(model != null, name + " cannot be null");
-		checkArgument(!Strings.isNullOrEmpty(model.getUid()), name + " cannot be null");
-		return new NameValuePair(name, model.getUid());
-	}
-	
-	public static NameValuePair checkNull(final String name, final String value) {
-		checkArgument(!Strings.isNullOrEmpty(value), name + " cannot be null");
-		return new NameValuePair(name, value);
-	}
-	
 	public static String contentTypeForFile(File file) {
 		if (file.getName().endsWith(".xls")) {
 			return "application/excel";
@@ -111,13 +103,33 @@ public abstract class RESTClient {
 	}
 	
 	public static NameValuePair[] removeNull(final NameValuePair... params) {
-		Collection<NameValuePair> result = CollectionUtils.select(Arrays.asList(params), PredicateUtils.notNullPredicate());
+		final Collection<NameValuePair> result = CollectionUtils.select(Arrays.asList(params), PredicateUtils.notNullPredicate());
 		return result.toArray(new NameValuePair[result.size()]);
-		
 	}
 	
-	public static NameValuePair toParam(final String name, final boolean value) {
+	public static NameValuePair required(final String name, final boolean value) {
 		return new NameValuePair(name, value ? "true" : "false");
+	}
+	
+	public static NameValuePair required(final String name, final IBaseModel model) {
+		checkArgument(model != null, name + " cannot be null");
+		return required(name, model.getUid());
+	}
+	
+	public static NameValuePair required(final String name, final String value) {
+		checkArgument(!Strings.isNullOrEmpty(value), name + " cannot be null");
+		return new NameValuePair(name, value);
+	}
+	
+	public static String[] required(final String name, final String... values) {
+		final Collection<String> notBlankValues = CollectionUtils.select(Arrays.asList(ArrayUtils.nullToEmpty(values)), new Predicate<String>() {
+			@Override
+			public boolean evaluate(String value) {
+				return StringUtils.isNotBlank(value);
+			}
+		});
+		checkArgument(!notBlankValues.isEmpty(), name + " cannot be empty");
+		return notBlankValues.toArray(new String[notBlankValues.size()]);
 	}
 	
 	protected static RequestEntity getStringRequestEntity(final String contentType, final String entityContent) {
@@ -129,11 +141,11 @@ public abstract class RESTClient {
 		}
 	}
 	
-	protected static NameValuePair nullable(final String name, final IBaseModel model) {
-		return model == null ? null : new NameValuePair(name, model.getUid());
+	protected static NameValuePair optional(final String name, final IBaseModel model) {
+		return model == null ? null : optional(name, model.getUid());
 	}
 	
-	protected static NameValuePair nullable(final String name, final String value) {
+	protected static NameValuePair optional(final String name, final String value) {
 		return value == null ? null : new NameValuePair(name, value);
 	}
 	
@@ -212,7 +224,7 @@ public abstract class RESTClient {
 	}
 	
 	protected PostMethod buildPostMethod(final String url, final String name, final String... values) throws ApiException {
-		return buildPostMethod(url, getStringRequestEntity(APPLICATION_JSON, name, values));
+		return buildPostMethod(url, getStringRequestEntity(APPLICATION_JSON, name, required(name, values)));
 	}
 	
 	protected PutMethod buildPutMethod(final String url, final NameValuePair... params) throws ApiException {

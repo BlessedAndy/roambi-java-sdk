@@ -4,18 +4,6 @@
  */
 package com.mellmo.roambi.api;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.apache.commons.collections.TransformerUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.PredicateUtils;
-import org.apache.commons.collections4.Transformer;
-import org.apache.commons.httpclient.NameValuePair;
-
-import com.google.common.base.Strings;
 
 public enum RoambiApiResource {
 
@@ -92,32 +80,32 @@ public enum RoambiApiResource {
 	},
 	GROUPS_UID {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]));
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, params[0]);
 		}
 	},
 	GROUPS_UID_INFO {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), INFO);
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, params[0], INFO);
 		}
 	},
 	GROUPS_UID_USERS {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), USERS);
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, params[0], USERS);
 		}
 	},
 	GROUPS_UID_USERS_REMOVE {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), USERS, REMOVE);
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, params[0], USERS, REMOVE);
 		}
 	},
 	GROUPS_UID_USERS_UID {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, toValue(GROUP_UID, params[0]), USERS, toValue(USER_UID, params[1]));
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, params[0], USERS, params[1]);
 		}
 	},
 	GROUPS_USERS_UID {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, USERS, toValue(USER_UID, params[0]));
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, GROUPS, USERS, params[0]);
 		}
 	},
 	LIST_PORTALS {
@@ -132,12 +120,12 @@ public enum RoambiApiResource {
 	},
 	USERS_UID {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, toValue(USER_UID, params[0]));
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, params[0]);
 		}
 	},
 	USERS_UID_GROUPS_UID {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
-			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, toValue(USER_UID, params[0]), GROUPS, toValue(GROUP_UID, params[1]));
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, params[0], GROUPS, params[1]);
 		}
 	},
 	PORTAL_CONTENTS {
@@ -183,8 +171,6 @@ public enum RoambiApiResource {
 	},
 	;
 
-	protected static final String USER_UID = "user_uid";
-	protected static final String GROUP_UID = "group_uid";
 	protected static final String GROUPS = "groups";
 	protected static final String REMOVE = "remove";
 	protected static final String USERS = "users";
@@ -198,15 +184,6 @@ public enum RoambiApiResource {
 
 	public abstract String url(String baseUrl, int apiVersion, String accountUid, String...params);
 	
-	public String paths(String baseUrl, int apiVersion, String accountUid, NameValuePair... params) {
-		return url(baseUrl, apiVersion, accountUid, CollectionUtils.collect(Arrays.asList(params), new Transformer<NameValuePair, String>() {
-			@Override
-			public String transform(NameValuePair param) {
-				return param.getValue();
-			}
-		}).toArray(new String[params.length]));
-	}
-
 	private static String normalizeServiceUrl(String serviceUrl) {
 		if (serviceUrl.endsWith("/")) {
 			return serviceUrl;
@@ -232,10 +209,5 @@ public enum RoambiApiResource {
 			RoambiApiClient.LOG.debug("Hitting url:" + builder.toString());
 		}
 		return builder.toString();
-	}
-	
-	private static String toValue(final String name, final String value) {
-		checkArgument(!Strings.isNullOrEmpty(value), name + " cannot be null");
-		return value;
 	}
 }
