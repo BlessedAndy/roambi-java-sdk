@@ -256,12 +256,21 @@ public class RoambiApiClient extends RESTClient {
 	}
 	
 	public PagedList<User> getUsers() throws ApiException {
-		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(buildUrl(RoambiApiResource.LIST_USERS))) {
+		return getUsers(buildGetMethod(buildUrl(RoambiApiResource.LIST_USERS)));
+	}
+	
+	private PagedList<User> getUsers(final HttpMethodBase method) throws ApiException {
+		ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				return User.fromApiListResponse(this.method.getResponseBodyAsString());
 			}
 		};
 		return (PagedList<User>) handler.invokeApi();
+	}
+	
+	public User getUserByEmail(final String email) throws ApiException {
+		final PagedList<User> list = getUsers(buildGetMethod(buildUrl(RoambiApiResource.USERS_SEARCH), required("email", email)));
+		return list.getResults().size() > 0 ? list.getResults().get(0) : null;
 	}
 	
 	public List<Portal> getPortals() throws ApiException {
@@ -270,7 +279,6 @@ public class RoambiApiClient extends RESTClient {
 				return Portal.fromApiListResponse(this.method.getResponseBodyAsString());
 			}
 		};
-		
 		return (List<Portal>) handler.invokeApi();
 	}
 

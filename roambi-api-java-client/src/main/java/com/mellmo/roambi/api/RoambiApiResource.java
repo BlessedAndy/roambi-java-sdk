@@ -123,6 +123,11 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, params[0]);
 		}
 	},
+	USERS_SEARCH {
+		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, SEARCH);
+		}
+	},
 	USERS_UID_GROUPS_UID {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, USERS, params[0], GROUPS, params[1]);
@@ -171,6 +176,7 @@ public enum RoambiApiResource {
 	},
 	;
 
+	protected static final String SEARCH = "search";
 	protected static final String GROUPS = "groups";
 	protected static final String REMOVE = "remove";
 	protected static final String USERS = "users";
