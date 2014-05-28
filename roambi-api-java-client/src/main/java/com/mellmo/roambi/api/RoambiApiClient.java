@@ -20,6 +20,7 @@ import org.apache.commons.collections4.Transformer;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NameValuePair;
@@ -98,7 +99,14 @@ public class RoambiApiClient extends RESTClient {
 
 		httpClient = new HttpClient();
 		httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
+
 	}
+
+    public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, RoambiApiApplication app) {
+        this(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, app);
+        HostConfiguration config = httpClient.getHostConfiguration();
+        config.setProxy(proxyHost, proxyPort);
+    }
 
 	public void setCurrentAccount(String accountUid) {
 		currentAccountUid = accountUid;
