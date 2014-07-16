@@ -8,6 +8,8 @@ import com.mellmo.roambi.api.RoambiApiApplication;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.Account;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.FileInputStream;
@@ -61,6 +63,18 @@ public class RoambiClientWrapper implements RoambiApiApplication {
             else {
                 roambiApiClient = new RoambiApiClient(serviceUrl, apiVersion, consumerKey, consumerSecret, redirectUri, this);
             }
+            
+            final String propRetries = props.getProperty("retries");
+            if (StringUtils.isNumeric(propRetries)) {
+            	try {
+            		logger.info(String.format("found retries=%s prop", propRetries));
+            		final int retries = Integer.parseInt(propRetries);
+            		roambiApiClient.setRetries(retries);
+            	} catch (NumberFormatException e) {
+            		logger.error(e.getMessage());
+            	}
+            }
+            
             if(account == null)
             {
                 List<Account> accounts = roambiApiClient.getUserAccounts();

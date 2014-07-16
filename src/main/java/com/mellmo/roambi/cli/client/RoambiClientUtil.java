@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.apache.commons.codec.binary.Base64;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -68,7 +69,7 @@ public class RoambiClientUtil {
         return new ContentItem(uid, name);
     }
 
-    private static ContentResult getContentAndFolderByPath(String portalUid, String destinationPath, RoambiApiClient client) throws PortalContentNotFoundException, FileNotFoundException {
+    private static ContentResult getContentAndFolderByPath(String portalUid, String destinationPath, RoambiApiClient client) throws PortalContentNotFoundException, IOException {
         if(destinationPath.startsWith("/")) {
             destinationPath = destinationPath.replaceFirst("/", "");
         }
@@ -120,7 +121,7 @@ public class RoambiClientUtil {
         return result;
     }
 
-    public static String getUserId(String id, RoambiApiClient client) throws ApiException {
+    public static String getUserId(String id, RoambiApiClient client) throws ApiException, IOException {
         PagedList<User> pagedList = client.getUsers();
         List<User> userList = pagedList.getResults();
 
@@ -132,7 +133,7 @@ public class RoambiClientUtil {
         return id;
     }
 
-    public static List<String> getUserIds(List<String> users, RoambiApiClient client) throws ApiException {
+    public static List<String> getUserIds(List<String> users, RoambiApiClient client) throws ApiException, IOException {
         PagedList<User> pagedList = client.getUsers();
         List<User> userList = pagedList.getResults();
         List<String> results = new ArrayList<String>();
@@ -162,7 +163,7 @@ public class RoambiClientUtil {
         return results;
     }
 
-    public static String getGroupId(String id, RoambiApiClient client) throws ApiException {
+    public static String getGroupId(String id, RoambiApiClient client) throws ApiException, IOException {
         List<Group> groupList = client.getGroups();
 
         for(Group group:groupList) {
@@ -173,7 +174,7 @@ public class RoambiClientUtil {
         return id;
     }
 
-    public static List<String> getGroupIds(List<String> groups, RoambiApiClient client) throws ApiException {
+    public static List<String> getGroupIds(List<String> groups, RoambiApiClient client) throws ApiException, IOException {
         List<Group> groupList = client.getGroups();
         List<String> results = new ArrayList<String>();
         for(String groupId:groups) {
@@ -186,7 +187,7 @@ public class RoambiClientUtil {
         return results;
     }
 
-    public static void addPermission(ContentItem newItem, List<String> permissionIds, RoambiApiClient client) throws ApiException {
+    public static void addPermission(ContentItem newItem, List<String> permissionIds, RoambiApiClient client) throws ApiException, IOException {
         List<String> userIds = RoambiClientUtil.getUserIds(permissionIds, client);
         List<String> groupIds=null;
         if(!permissionIds.contains("all")) {
@@ -196,7 +197,7 @@ public class RoambiClientUtil {
         client.addPermission(newItem, groupIds, userIds, RoambiFilePermission.WRITE);
     }
 
-    public static ContentItem findFile(String directory_uid, ContentItem fileItem, RoambiApiClient client) throws ApiException {
+    public static ContentItem findFile(String directory_uid, ContentItem fileItem, RoambiApiClient client) throws ApiException, IOException {
         ContentItem foundItem = null;
         List<ContentItem> directoryListing = client.getPortalContents("rfs", directory_uid);
         for(ContentItem content:directoryListing) {
