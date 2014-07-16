@@ -7,7 +7,6 @@ package com.mellmo.roambi.api;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -19,8 +18,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Transformer;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HostConfiguration;
+import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.NameValuePair;
@@ -87,6 +86,7 @@ public class RoambiApiClient extends RESTClient {
 	private User currentUser = null;
 	private String currentAccountUid = null;
     private String redirect_uri = "roambi-api://client.roambi.com/authorize";
+    private int retries = 0;
 
 	public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, RoambiApiApplication app) {
 		this.clientId = clientId;
@@ -99,7 +99,6 @@ public class RoambiApiClient extends RESTClient {
 
 		httpClient = new HttpClient();
 		httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
-
 	}
 
     public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, RoambiApiApplication app) {
@@ -112,7 +111,7 @@ public class RoambiApiClient extends RESTClient {
 		currentAccountUid = accountUid;
 	}
 	
-	public User currentUser() throws ApiException {
+	public User currentUser() throws ApiException, IOException {
 		if (currentUser == null) {
 			currentUser = getCurrentUser();
 		}
@@ -127,7 +126,7 @@ public class RoambiApiClient extends RESTClient {
 		this.accessToken = accessToken;
 	}
 
-	public List<Account> getUserAccounts() throws ApiException {
+	public List<Account> getUserAccounts() throws ApiException, IOException {
 		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
 		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
@@ -137,7 +136,7 @@ public class RoambiApiClient extends RESTClient {
 		return (List<Account>) handler.invokeApi();
 	}
 	
-	private User getCurrentUser() throws ApiException {
+	private User getCurrentUser() throws ApiException, IOException {
 		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
 		return (User) new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
@@ -146,7 +145,7 @@ public class RoambiApiClient extends RESTClient {
 		}.invokeApi();
 	}
 	
-    public List<Group> getGroups() throws ApiException {
+    public List<Group> getGroups() throws ApiException, IOException {
     	final String url = buildUrl(RoambiApiResource.LIST_GROUPS);
         ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
             public Object onSuccess() throws HttpException, IOException {
@@ -156,48 +155,48 @@ public class RoambiApiClient extends RESTClient {
         return (List<Group>) handler.invokeApi();
 	}
 	
-	public Group getGroupInfo(final String groupUid) throws ApiException {
+	public Group getGroupInfo(final String groupUid) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.GROUPS_UID, required(GROUP_UID, groupUid));
 		return invokeMethodGetGroupResponse(buildGetMethod(url));
 	}
 	
-	public Group createGroup(final String name) throws ApiException {
+	public Group createGroup(final String name) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.LIST_GROUPS);
 		final HttpMethodBase method = buildPostMethod(url, required(Group.NAME, name));
 		return invokeMethodGetGroupResponse(method);
 	}
 		
-	public Group setGroupInfo(final String groupUid, final String name, final String description) throws ApiException {
+	public Group setGroupInfo(final String groupUid, final String name, final String description) throws ApiException, IOException {
 		return updateGroupInfo(groupUid, required(Group.NAME, name), required(Group.DESCRIPTION, description));
 	}
 
-	public Group setGroupName(final String groupUid, final String name) throws ApiException {
+	public Group setGroupName(final String groupUid, final String name) throws ApiException, IOException {
 		return updateGroupInfo(groupUid, required(Group.NAME, name));
 	}
 	
-	public Group setGroupDescription(final String groupUid, final String description) throws ApiException {
+	public Group setGroupDescription(final String groupUid, final String description) throws ApiException, IOException {
 		return updateGroupInfo(groupUid, required(Group.DESCRIPTION, description));
 	}
 	
-	private Group updateGroupInfo(final String groupUid, final NameValuePair... params) throws ApiException {
+	private Group updateGroupInfo(final String groupUid, final NameValuePair... params) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.GROUPS_UID_INFO, required(GROUP_UID, groupUid));
 		final HttpMethodBase method = buildPutMethod(url, params);
 		return invokeMethodGetGroupResponse(method);
 	}
 	
-	public void deleteGroup(final String groupUid) throws ApiException {
+	public void deleteGroup(final String groupUid) throws ApiException, IOException {
 		invokeMethodGetDeleteResourceResponse(buildUrl(RoambiApiResource.GROUPS_UID, required(GROUP_UID, groupUid)), "deleteGroup");
 	}
 	
-	public Group addGroupUsers(final String groupUid, final String... users) throws ApiException {
+	public Group addGroupUsers(final String groupUid, final String... users) throws ApiException, IOException {
 		return invokeMethodGetGroupResponse(buildPostMethod(buildUrl(RoambiApiResource.GROUPS_UID_USERS, required(GROUP_UID, groupUid)), Group.USERS, users));
 	}
 	
-	public Group removeGroupUsers(final String groupUid, final String... users) throws ApiException {
+	public Group removeGroupUsers(final String groupUid, final String... users) throws ApiException, IOException {
 		return invokeMethodGetGroupResponse(buildPostMethod(buildUrl(RoambiApiResource.GROUPS_UID_USERS_REMOVE, required(GROUP_UID, groupUid)), Group.USERS, users));
 	}
 	
-	private Group invokeMethodGetGroupResponse(final HttpMethodBase method) throws ApiException {
+	private Group invokeMethodGetGroupResponse(final HttpMethodBase method) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				return Group.fromApiResponseToGroup(this.method.getResponseBodyAsString());
@@ -206,15 +205,15 @@ public class RoambiApiClient extends RESTClient {
 		return (Group) handler.invokeApi();
 	}
 	
-	public void removeGroupUser(final String groupUid, final String userUid) throws ApiException {
+	public void removeGroupUser(final String groupUid, final String userUid) throws ApiException, IOException {
 		invokeMethodGetDeleteResourceResponse(buildUrl(RoambiApiResource.GROUPS_UID_USERS_UID, required(GROUP_UID, groupUid), required(USER_UID, userUid)), "removeGroupUser");
 	}
 	
-	public void removeUserFromAllGroups(final String userUid) throws ApiException {
+	public void removeUserFromAllGroups(final String userUid) throws ApiException, IOException {
 		invokeMethodGetDeleteResourceResponse(buildUrl(RoambiApiResource.GROUPS_USERS_UID, required(USER_UID, userUid)), "removeUserFromAllGroups");
 	}
 	
-	public User inviteUser(final String primary_email, final String given_name, final String family_name, final Role role) throws ApiException {
+	public User inviteUser(final String primary_email, final String given_name, final String family_name, final Role role) throws ApiException, IOException {
 		final HttpMethodBase method = buildPostMethod(buildUrl(RoambiApiResource.LIST_USERS), required(User.PRIMARY_EMAIL, primary_email),
 																							  required(User.GIVEN_NAME, given_name),
 																							  required(User.FAMILY_NAME, family_name),
@@ -222,39 +221,39 @@ public class RoambiApiClient extends RESTClient {
 		return invokeMethodGetUserResponse(method);
 	}
 	
-	public User getUserInfo(final String userUid) throws ApiException {
+	public User getUserInfo(final String userUid) throws ApiException, IOException {
 		return invokeMethodGetUserResponse(buildGetMethod(buildUrl(RoambiApiResource.USERS_UID, required(USER_UID, userUid))));
 	}
 	
-	public User setUserRole(final String userUid, final Role role) throws ApiException {
+	public User setUserRole(final String userUid, final Role role) throws ApiException, IOException {
 		return updateUser(userUid, required(UserAccount.ROLE, role));
 	}
 	
-	public User setUserRole(final String userUid, final String role) throws ApiException {
+	public User setUserRole(final String userUid, final String role) throws ApiException, IOException {
 		return updateUser(userUid, required(UserAccount.ROLE, Role.getRoleUid(role)));
 	}
 	
-	public User enableUser(final String userUid) throws ApiException {
+	public User enableUser(final String userUid) throws ApiException, IOException {
 		return updateUser(userUid, required(UserAccount.ENABLED, true));
 	}
 	
-	public User disableUser(final String userUid) throws ApiException {
+	public User disableUser(final String userUid) throws ApiException, IOException {
 		return updateUser(userUid, required(UserAccount.ENABLED, false));
 	}
 	
-	public User updateUser(final String userUid, final Role role, final boolean enabled) throws ApiException {
+	public User updateUser(final String userUid, final Role role, final boolean enabled) throws ApiException, IOException {
 		return updateUser(userUid, required(UserAccount.ROLE, role), required(UserAccount.ENABLED, enabled));
 	}
 	
-	public User updateUser(final String userUid, final String role, final boolean enabled) throws ApiException {
+	public User updateUser(final String userUid, final String role, final boolean enabled) throws ApiException, IOException {
 		return updateUser(userUid, required(UserAccount.ROLE, Role.getRoleUid(role)), required(UserAccount.ENABLED, enabled));
 	}
 	
-    private User updateUser(final String userUid, final NameValuePair... params) throws ApiException {
+    private User updateUser(final String userUid, final NameValuePair... params) throws ApiException, IOException {
 		return invokeMethodGetUserResponse(buildPutMethod(buildUrl(RoambiApiResource.USERS_UID, required(USER_UID, userUid)), params));
 	}
 
-	protected User invokeMethodGetUserResponse(final HttpMethodBase method) throws ApiException {
+	protected User invokeMethodGetUserResponse(final HttpMethodBase method) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				return User.fromApiResponseToUser(this.method.getResponseBodyAsString());
@@ -263,11 +262,11 @@ public class RoambiApiClient extends RESTClient {
 		return (User) handler.invokeApi();
 	}
 	
-	public PagedList<User> getUsers() throws ApiException {
+	public PagedList<User> getUsers() throws ApiException, IOException {
 		return getUsers(buildGetMethod(buildUrl(RoambiApiResource.LIST_USERS)));
 	}
 	
-	private PagedList<User> getUsers(final HttpMethodBase method) throws ApiException {
+	private PagedList<User> getUsers(final HttpMethodBase method) throws ApiException, IOException {
 		ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				return User.fromApiListResponse(this.method.getResponseBodyAsString());
@@ -276,12 +275,12 @@ public class RoambiApiClient extends RESTClient {
 		return (PagedList<User>) handler.invokeApi();
 	}
 	
-	public User getUserByEmail(final String email) throws ApiException {
+	public User getUserByEmail(final String email) throws ApiException, IOException {
 		final PagedList<User> list = getUsers(buildGetMethod(buildUrl(RoambiApiResource.USERS_SEARCH), required("email", email)));
 		return list.getResults().size() > 0 ? list.getResults().get(0) : null;
 	}
 	
-	public List<Portal> getPortals() throws ApiException {
+	public List<Portal> getPortals() throws ApiException, IOException {
 		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(buildUrl(RoambiApiResource.LIST_PORTALS))) {
 			public Object onSuccess() throws HttpException, IOException {
 				return Portal.fromApiListResponse(this.method.getResponseBodyAsString());
@@ -290,11 +289,11 @@ public class RoambiApiClient extends RESTClient {
 		return (List<Portal>) handler.invokeApi();
 	}
 
-	public List<ContentItem> getPortalContents(String portalUid, String folderUid) throws ApiException {
+	public List<ContentItem> getPortalContents(String portalUid, String folderUid) throws ApiException, IOException {
 		return getPortalContents(portalUid, folderUid, null);
 	}
 	
-	public List<ContentItem> getPortalContents(final String portalUid, final String folderUid, final String fileTypes) throws ApiException {
+	public List<ContentItem> getPortalContents(final String portalUid, final String folderUid, final String fileTypes) throws ApiException, IOException {
 		LOG.debug("Getting contents for portal '" + portalUid + "' and folder '" + folderUid + "' with file_types '" + fileTypes + "'");
 		final String url = buildUrl(RoambiApiResource.PORTAL_CONTENTS, required(PORTAL_UID, portalUid));
 		final GetMethod method = buildGetMethod(url, removeNull(optional(FOLDER_UID, folderUid), optional("file_types", fileTypes)));
@@ -307,34 +306,34 @@ public class RoambiApiClient extends RESTClient {
 		return (List<ContentItem>) handler.invokeApi();
 	}
 	
-	public ContentItem createFolder(final ContentItem parentFolder, final String title) throws ApiException {
+	public ContentItem createFolder(final ContentItem parentFolder, final String title) throws ApiException, IOException {
 		final HttpMethodBase method = buildPostMethod(buildUrl(RoambiApiResource.CREATE_FOLDER), removeNull(required(TITLE, title), optional(FOLDER_UID, parentFolder)));
 		return invokeMethodGetContentItemApiDetailsResponse(method, true);
 	}
 	
-	public ContentItem createFile(ContentItem parentFolder, String title, File sourceFile) throws FileNotFoundException, ApiException {
+	public ContentItem createFile(ContentItem parentFolder, String title, File sourceFile) throws ApiException, IOException {
 		final PostMethod method = buildPostMethod(buildUrl(RoambiApiResource.CREATE_FILE), toPart(required(TITLE, title)), toPart(required(FOLDER_UID, parentFolder)), toPart("upload", sourceFile));
 		return invokeMethodGetContentItemApiDetailsResponse(method, false);
 	}
 	
-	public void deleteFile(final String fileUid) throws ApiException {
+	public void deleteFile(final String fileUid) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.DELETE_FILE, required(FILE_UID, fileUid));
 		LOG.debug("fileUid: " + fileUid + " " + invokeMethodGetDeleteResourceResponse(url));
 	}
 	
-	public void deleteFolder(final String folderUid) throws ApiException {
+	public void deleteFolder(final String folderUid) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.DELETE_FOLDER, required(FOLDERUID, folderUid));
 		LOG.debug("folderUid: " + folderUid + " " + invokeMethodGetDeleteResourceResponse(url));
 	}
 	
-	private void invokeMethodGetDeleteResourceResponse(final String url, final String func) throws ApiException {
+	private void invokeMethodGetDeleteResourceResponse(final String url, final String func) throws ApiException, IOException {
 		final String result =  invokeMethodGetDeleteResourceResponse(url);
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(func + ": " + result);
 		}
 	}
 	
-	private String invokeMethodGetDeleteResourceResponse(final String url) throws ApiException {
+	private String invokeMethodGetDeleteResourceResponse(final String url) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(buildDeleteMethod(url)) {
 			@Override
 			public Object onSuccess() throws HttpException, IOException {
@@ -345,30 +344,30 @@ public class RoambiApiClient extends RESTClient {
 		return result;
 	}
 
-    public ContentItem addPermission(ContentItem contentItem, Group group, RoambiFilePermission permission) throws ApiException {
+    public ContentItem addPermission(ContentItem contentItem, Group group, RoambiFilePermission permission) throws ApiException, IOException {
     	return addPermission(contentItem, asList("group", group), null, permission);
     }
     
-    public ContentItem addPermission(ContentItem contentItem, User user, RoambiFilePermission permission) throws ApiException {
+    public ContentItem addPermission(ContentItem contentItem, User user, RoambiFilePermission permission) throws ApiException, IOException {
     	return addPermission(contentItem, null, asList("user", user), permission);
     }
 
-    public ContentItem addPermission(ContentItem contentItem, List<String> groups, List<String> users, RoambiFilePermission permission) throws ApiException {
+    public ContentItem addPermission(ContentItem contentItem, List<String> groups, List<String> users, RoambiFilePermission permission) throws ApiException, IOException {
     	final String url = buildUrl(contentItem.isFolder()?RoambiApiResource.ADD_FOLDER_PERMISSION:RoambiApiResource.ADD_PERMISSION, required("contentItem uid", contentItem));
 		final AddPermissionsRequest request = new AddPermissionsRequest(users, groups, permission);
 		final PostMethod method = buildPostMethod(url, getStringRequestEntity(TEXT_JSON, request.toJsonBody()));
 		return invokeMethodGetContentItemApiDetailsResponse(method, contentItem.isFolder());
     }
     
-	public ContentItem removePermission(ContentItem contentItem, User user) throws ApiException {
+	public ContentItem removePermission(ContentItem contentItem, User user) throws ApiException, IOException {
 		return removePermission(contentItem, null, asList("user", user));
 	}
 
-    public ContentItem removePermission(ContentItem contentItem, Group group) throws ApiException {
+    public ContentItem removePermission(ContentItem contentItem, Group group) throws ApiException, IOException {
         return removePermission(contentItem, asList("group", group), null);
     }
 
-    public ContentItem removePermission(ContentItem contentItem, List<String> groups, List<String> users) throws ApiException {
+    public ContentItem removePermission(ContentItem contentItem, List<String> groups, List<String> users) throws ApiException, IOException {
     	final String url = buildUrl(contentItem.isFolder()?RoambiApiResource.REMOVE_FOLDER_PERMISSION:RoambiApiResource.REMOVE_PERMISSION, required("contentItem uid", contentItem));
         final RemovePermissionsRequest request = new RemovePermissionsRequest(users, groups);
         final PostMethod method = buildPostMethod(url, getStringRequestEntity(TEXT_JSON, request.toJsonBody()));
@@ -381,32 +380,32 @@ public class RoambiApiClient extends RESTClient {
     	return list;
     }
     
-	public ContentItem updateFileName(ContentItem targetFile, String portalUid, String title) throws ApiException {
+	public ContentItem updateFileName(ContentItem targetFile, String portalUid, String title) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.UPDATE_FILE, required(PORTAL_UID, portalUid), required(TARGET_FILE, targetFile));
         final PostMethod method = buildPostMethod(url, TEXT_JSON, required(TITLE, title));
         return invokeMethodGetContentItemApiDetailsResponse(method, false);
 	}
 
-    public ContentItem updateFileDirectory(ContentItem targetFile, String portalUid, ContentItem directory) throws ApiException {
+    public ContentItem updateFileDirectory(ContentItem targetFile, String portalUid, ContentItem directory) throws ApiException, IOException {
     	final String url = buildUrl(RoambiApiResource.UPDATE_FILE, required(PORTAL_UID, portalUid), required(TARGET_FILE, targetFile));
         final PostMethod method = buildPostMethod(url, TEXT_JSON, required(DIRECTORY_UID, directory));
         return invokeMethodGetContentItemApiDetailsResponse(method, false);
     }
 
-    public ContentItem updateFileData(final ContentItem targetFile, final InputStream inputStream, final String contentType) throws ApiException {
+    public ContentItem updateFileData(final ContentItem targetFile, final InputStream inputStream, final String contentType) throws ApiException, IOException {
     	final String url = buildUrl(RoambiApiResource.UPDATE_FILE_DATA, required(TARGET_FILE, targetFile));
         checkArgument(inputStream != null, "inputStream cannot be null.");
         final PostMethod method = buildPostMethod(url, new InputStreamRequestEntity(inputStream, required("contentType", contentType).getValue()));
         return invokeMethodGetContentItemApiDetailsResponse(method, false);
     }
 
-    public ContentItem updateFileData(ContentItem targetFile, File sourceFile) throws ApiException, FileNotFoundException {
+    public ContentItem updateFileData(ContentItem targetFile, File sourceFile) throws ApiException, IOException {
     	final String url = buildUrl(RoambiApiResource.UPDATE_FILE_DATA, required(TARGET_FILE, targetFile));
         final PostMethod methd = buildPostMethod(url, toPart("upload", sourceFile));
         return invokeMethodGetContentItemApiDetailsResponse(methd, false);
     }
 
-	public ApiJob createAnalyticsFile(ContentItem sourceFile, ContentItem templateFile, ContentItem destinationFolder, String title, boolean overwrite) throws ApiException {
+	public ApiJob createAnalyticsFile(ContentItem sourceFile, ContentItem templateFile, ContentItem destinationFolder, String title, boolean overwrite) throws ApiException, IOException {
 		final HttpMethodBase method = buildPostMethod(buildUrl(RoambiApiResource.CREATE_ANALYTICS_FILE), TEXT_JSON,
 													  required(TITLE, title),
 													  required("source_file_uid", sourceFile),
@@ -416,14 +415,14 @@ public class RoambiApiClient extends RESTClient {
 		return invokeMethodGetApiJobResponse(method);
 	}
 	
-	public ApiJob createAnalyticsFile(final File sourceFile, final ContentItem templateFile, final ContentItem folder, final String title, final boolean overwrite) throws ApiException, FileNotFoundException {
+	public ApiJob createAnalyticsFile(final File sourceFile, final ContentItem templateFile, final ContentItem folder, final String title, final boolean overwrite) throws ApiException, IOException {
 		final PostMethod method = buildPostMethod(buildUrl( RoambiApiResource.CREATE_ANALYTICS_FILE),
 												  toPart("publish_options", required(TITLE, title), required(TEMPLATE_UID, templateFile), required(OVERWRITE, overwrite), required(FOLDER_UID, folder)),
 												  toPart("source_file", sourceFile));
 		return invokeMethodGetApiJobResponse(method);
 	}
 
-	private ApiJob invokeMethodGetApiJobResponse(final HttpMethodBase method) throws ApiException {
+	private ApiJob invokeMethodGetApiJobResponse(final HttpMethodBase method) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				return null;
@@ -432,15 +431,15 @@ public class RoambiApiClient extends RESTClient {
 		return (ApiJob) handler.invokeApi();
 	}
 	
-    public ContentItem getFolderInfo(final String folderUid) throws ApiException {
+    public ContentItem getFolderInfo(final String folderUid) throws ApiException, IOException {
 		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FOLDER_INFO, required(FOLDERUID, folderUid))), true);
 	}
 
-	public ContentItem getFileInfo(String fileUid) throws ApiException {
+	public ContentItem getFileInfo(String fileUid) throws ApiException, IOException {
 		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FILE_INFO, required(FILE_UID, fileUid))), false);
 	}
 	
-    public ContentItem setFileInfo(String fileUid, ContentItem item) throws ApiException {
+    public ContentItem setFileInfo(String fileUid, ContentItem item) throws ApiException, IOException {
         final String url = buildUrl(RoambiApiResource.FILE_INFO, required(FILE_UID, fileUid));
         final PostMethod method = buildPostMethod(url, TEXT_JSON, required(TITLE, item != null ? item.getName() : null));
         return invokeMethodGetContentItemApiDetailsResponse(method, false);
@@ -463,7 +462,7 @@ public class RoambiApiClient extends RESTClient {
 		}
 	}
 
-	public ApiJob getJob(String jobUid) throws ApiException {
+	public ApiJob getJob(String jobUid) throws ApiException, IOException {
 		final String url = RoambiApiResource.GET_JOB.url(baseServiceUrl, apiVersion, required("jobUid", jobUid).getValue());
 		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
@@ -675,49 +674,79 @@ public class RoambiApiClient extends RESTClient {
 	private int servicePort() {
 		return this.serviceUri.getPort();
 	}
+	
+	public int getRetries() {
+		return retries;
+	}
+
+	public void setRetries(int retries) {
+		this.retries = retries;
+	}
 
 
 	private abstract class ApiInvocationHandler {
 		protected HttpMethodBase method = null;
-		protected Object result = null;
 
 		public ApiInvocationHandler(HttpMethodBase method) {
 			this.method = method;
 		}
 
 		public abstract Object onSuccess() throws HttpException, IOException;
-
-		public Object invokeApi() throws ApiException {
+		
+		public Object invokeApi() throws ApiException, IOException {
+			int tries = 0;
 			try {
-				httpClient.executeMethod(method);
-
-				if (method.getStatusCode() == 200) {
-					result = onSuccess();
-				}
-				else if (method.getStatusCode() == 202) {
-					result = ApiJob.fromApiResponse(method.getResponseBodyAsStream());
-				}
-                else if (isRateLimitExceeded(method)) {
-                    throw new ApiException(403, "Forbidden", "Api Rate Limit Exceeded");
-                }
-				else {
-					throw ApiException.fromApiResponse(method.getStatusCode(), method.getResponseBodyAsStream());
-				}
-			} catch (HttpException httpEx) {
-				handleApiException(httpEx);
-			} catch (IOException ioe) {
-				handleApiException(ioe);
+				do {
+					tries++;
+					if (LOG.isDebugEnabled() && retries > 0) {
+						LOG.debug(String.format("invokeApi: tries=%d, retries=%d", tries, retries));
+					}
+					try {
+						return invoke();
+					} catch (HttpException e) {
+						LOG.error(logError(tries, e));
+						if (tries > retries)	throw e;
+						
+					} catch (IOException e) {
+						LOG.error(logError(tries, e));
+						if (tries > retries)	throw e;
+					}
+					try {
+						Thread.sleep(tries * 1000);	// TODO: might need to change how long thread sleeps
+					} catch (InterruptedException e) {
+						LOG.warn(e.getMessage());
+					}
+				} while (tries <= retries);
 			} finally {
 				if (method != null) {
 					method.releaseConnection();
 				}
 			}
-			return result;
+			return null;	// this line of code is not reachable. eclipse is so stupid
+		}
+		
+		private Object invoke() throws HttpException, IOException, ApiException {
+			httpClient.executeMethod(method);
+			if (method.getStatusCode() == 200) {
+				return onSuccess();
+			}
+			else if (method.getStatusCode() == 202) {
+				return ApiJob.fromApiResponse(method.getResponseBodyAsStream());
+			}
+            else if (isRateLimitExceeded(method)) {
+                throw new ApiException(403, "Forbidden", "Api Rate Limit Exceeded");
+            }
+			else {
+				throw ApiException.fromApiResponse(method.getStatusCode(), method.getResponseBodyAsStream());
+			}
 		}
 
+		private String logError(int tries, final Exception e) {
+			return String.format("tries=%d, retries=%d, %s", tries, retries, e.getMessage());
+		}
 	}
 	
-	protected ContentItem invokeMethodGetContentItemApiDetailsResponse(final HttpMethodBase method, final boolean isFolder) throws ApiException {
+	protected ContentItem invokeMethodGetContentItemApiDetailsResponse(final HttpMethodBase method, final boolean isFolder) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				if (isFolder) {
