@@ -6,13 +6,13 @@
 
     <groupId>com.mellmo.roambi.api</groupId>
     <artifactId>roambi-api-java-cli</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
 
     <dependencies>
         <dependency>
             <groupId>com.mellmo.roambi.api</groupId>
             <artifactId>api-client</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.beust</groupId>
