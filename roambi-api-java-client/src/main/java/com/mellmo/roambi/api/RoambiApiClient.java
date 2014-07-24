@@ -9,7 +9,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +24,7 @@ import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethodBase;
+import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
@@ -101,11 +104,14 @@ public class RoambiApiClient extends RESTClient {
 		httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
 	}
 
-    public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, RoambiApiApplication app) {
+    public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, String proxyUserDomain, RoambiApiApplication app) throws IOException {
         this(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, app);
         HostConfiguration config = httpClient.getHostConfiguration();
         if (proxyUsername != null)
-        	httpClient.getState().setProxyCredentials(new AuthScope(proxyHost, proxyPort,AuthScope.ANY_REALM), new UsernamePasswordCredentials(proxyUsername, proxyPassword));
+        	if (proxyUserDomain == null)
+        		proxyUserDomain = "";
+			httpClient.getState().setProxyCredentials(new AuthScope(proxyHost, proxyPort,AuthScope.ANY_REALM), 
+					new NTCredentials(proxyUsername, proxyPassword, InetAddress.getLocalHost().getCanonicalHostName(), proxyUserDomain));
         config.setProxy(proxyHost, proxyPort);
     }
 
