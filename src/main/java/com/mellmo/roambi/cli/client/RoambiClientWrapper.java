@@ -56,9 +56,11 @@ public class RoambiClientWrapper implements RoambiApiApplication {
 
             String proxyHost = props.getProperty("proxyHost");
             String proxyPort = props.getProperty("proxyPort");
+            String proxyUsername = props.getProperty("proxyUsername");
+            String proxyPassword = props.getProperty("proxyPassword");
 
             if(proxyHost != null && proxyPort !=null) {
-                roambiApiClient = new RoambiApiClient(serviceUrl, apiVersion, consumerKey, consumerSecret, redirectUri, proxyHost, Integer.valueOf(proxyPort), this);
+                roambiApiClient = new RoambiApiClient(serviceUrl, apiVersion, consumerKey, consumerSecret, redirectUri, proxyHost, Integer.valueOf(proxyPort), proxyUsername, proxyPassword, this);
             }
             else {
                 roambiApiClient = new RoambiApiClient(serviceUrl, apiVersion, consumerKey, consumerSecret, redirectUri, this);
