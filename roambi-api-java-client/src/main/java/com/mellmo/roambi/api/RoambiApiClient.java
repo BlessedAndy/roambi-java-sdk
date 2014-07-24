@@ -101,9 +101,11 @@ public class RoambiApiClient extends RESTClient {
 		httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
 	}
 
-    public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, RoambiApiApplication app) {
+    public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, RoambiApiApplication app) {
         this(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, app);
         HostConfiguration config = httpClient.getHostConfiguration();
+        if (proxyUsername != null)
+        	httpClient.getState().setProxyCredentials(new AuthScope(proxyHost, proxyPort,AuthScope.ANY_REALM), new UsernamePasswordCredentials(proxyUsername, proxyPassword));
         config.setProxy(proxyHost, proxyPort);
     }
 
