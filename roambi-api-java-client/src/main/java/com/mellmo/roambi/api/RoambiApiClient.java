@@ -107,11 +107,14 @@ public class RoambiApiClient extends RESTClient {
     public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, String proxyUserDomain, RoambiApiApplication app) throws IOException {
         this(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, app);
         HostConfiguration config = httpClient.getHostConfiguration();
-        if (proxyUsername != null)
-        	if (proxyUserDomain == null)
+        if (proxyUsername != null) {
+        	if (proxyUserDomain == null) {
         		proxyUserDomain = "";
+        	}
+        	LOG.info("providing credentials for "+proxyHost+":"+proxyPort+" un="+proxyUsername);
 			httpClient.getState().setProxyCredentials(new AuthScope(proxyHost, proxyPort,AuthScope.ANY_REALM), 
 					new NTCredentials(proxyUsername, proxyPassword, InetAddress.getLocalHost().getCanonicalHostName(), proxyUserDomain));
+        }
         config.setProxy(proxyHost, proxyPort);
     }
 
