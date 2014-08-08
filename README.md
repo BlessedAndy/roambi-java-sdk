@@ -1,8 +1,3 @@
-DEPRECATED
-=============
-Moved to https://github.com/Roambi/roambi-script
-
-
 roambi-script
 =============
 
