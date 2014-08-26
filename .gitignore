@@ -9,3 +9,9 @@
 *.properties
 !log4j.properties
 roambi.log
+
+*/.classpath
+*/.project
+*/.settings
+*/bin/
+*/target
