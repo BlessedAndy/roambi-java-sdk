@@ -70,8 +70,8 @@ public class RoambiCmdLineClient {
 
         Iterator <Class <?extends CommandBase>> itr = subTypes.iterator();
         while(itr.hasNext()) {
-            Class clazz = itr.next();
-            logger.debug("registering command class: " + clazz.getName());
+            Class<?extends CommandBase> clazz = itr.next();
+            logger.info("registering command class: " + clazz.getName());
 
             try {
                 if(!Modifier.isAbstract(clazz.getModifiers())) {

@@ -4,18 +4,15 @@
  */
 package com.mellmo.roambi.cli.commands;
 
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
-import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
-import com.mellmo.roambi.api.model.RoambiFilePermission;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.

@@ -11,25 +11,23 @@ Requirements:
 * Roambi API Client information
 * Java
 
-You may compile the roambi-api-cli.jar manually in bash:
+## Installation
+1. Clone the java sdk project
+	* `$ git clone https://github.com/Roambi/roambi-java-sdk`
+* Compile the java client library (see the [full instructions](https://github.com/Roambi/roambi-java-sdk))
+	* `$ cd roambi-java-sdk/roambi-api-java-client`
+	* `$ mvn install`
+* Compile the RoambiScript library
+	* `$ cd -`
+	* `$ git clone https://github.com/Roambi/roambi-script`
+	* `$ cd roambi-script`
+	* `$ mvn install`
+* The RoambiScript jar file will now be available at `target/roambi-api-cli.jar`
 
-    #!/bin/sh
-    cd /tmp/
-    git clone https://github.com/Roambi/roambi-java-sdk
-    cd roambi-java-sdk/roambi-api-java-client/
-    mvn package
-    _api_client_jar=${PWD}/target/api-client-0.0.1-SNAPSHOT.jar
-    mvn install:install-file -DgroupId=com.mellmo.roambi.api \
-    -DartifactId=api-client -Dversion=0.0.1-SNAPSHOT -Dfile=${_api_client_jar} -Dpackaging=jar
-    #_api_client_jar=/tmp/roambi-java-sdk/roambi-api-java-client/target/api-client-0.0.1-SNAPSHOT.jar
-    cd ../../
-    git clone https://github.com/Roambi/roambi-script
-    cd roambi-script/
-    mvn package
-
-
-Alternatively, you may download the previously compiled verion here:
+Alternatively, you may download the latest released version here:
 https://s3.amazonaws.com/roambi-api-downloads/roambi-script/latest/roambi-api-cli.jar
+
+## Usage
 
 The client supports the following functions:
 
@@ -38,30 +36,35 @@ The client supports the following functions:
 * refresh - create a new document (RBI) with a template and source file
 
 
-Account Properties
+### Account Properties
+
 You need to contain your account and client info in a (plain text) .properties file.  Here is an example of the contents:
 
-* server.url=https://api.roambi.com
-* consumer.key=3d7c8sdf1316a8cd5bac0d87
-* consumer.secret=73252asdfbc9e3291066df92756a62bbb760238d6
-* redirect.uri=roambi-api://client.roambi.com/authorize
-* username=someone@yourdomain.com
-* password=mypassword
+```
+server.url=https://api.roambi.com
+consumer.key=3d7c8sdf1316a8cd5bac0d87
+consumer.secret=73252asdfbc9e3291066df92756a62bbb760238d6
+redirect.uri=roambi-api://client.roambi.com/authorize
+username=someone@yourdomain.com
+password=mypassword
+```
 
 You pass this to the jar using the -props option:
 
-java -jar roambi-api-cli.jar -props=path/to/my/file.properties
+`java -jar roambi-api-cli.jar -props=path/to/my/file.properties`
+
+### Command line help
+
+By default, the RoambiScript library will display inline help:
 
 ```
 Usage: <main class> [options] [command] [command options]
-
   Options:
-    --help
+        --help
        Shows help
        Default: false
     -props
        Property file location
-
   Commands:
     update      Upload and update a file in the Roambi Repository
       Usage: update [options]
@@ -77,26 +80,6 @@ Usage: <main class> [options] [command] [command options]
               --file
              file to be deleted
 
-    mkdir      Create a folder in the Roambi Repository
-      Usage: mkdir [options]
-        Options:
-              --folder
-             parent folder
-              --permission
-             set permissions for folder
-              --title
-             title of the new folder
-
-    removePermission      remove permissions to a file
-      Usage: removePermission [options]
-        Options:
-              --groupIds
-             group ids
-              --target
-             target file
-              --userIds
-             user ids
-
     publish      Refresh a Roambi document
       Usage: publish [options]
         Options:
@@ -111,21 +94,6 @@ Usage: <main class> [options] [command] [command options]
               --title
              title of the new document
 
-    configure      Bootstrap a the client .properties file
-      Usage: configure [options]
-
-    upload      Upload and create a file in the Roambi Repository
-      Usage: upload [options]
-        Options:
-              --file
-             locale file you with to upload
-              --folder
-             remote folder destination
-              --permission
-             set permissions for new file
-              --title
-             title of the new file
-
     addPermission      add permissions to a file
       Usage: addPermission [options]
         Options:
@@ -139,12 +107,63 @@ Usage: <main class> [options] [command] [command options]
               --userIds
              user ids
 
+    upload      Upload and create a file in the Roambi Repository
+      Usage: upload [options]
+        Options:
+              --file
+             locale file you with to upload
+              --folder
+             remote folder destination
+              --permission
+             set permissions for new file
+              --title
+             title of the new file
+
+    configure      Bootstrap a the client .properties file
+      Usage: configure [options]
+
+    removePermission      remove permissions to a file
+      Usage: removePermission [options]
+        Options:
+              --groupIds
+             group ids
+              --target
+             target file
+              --userIds
+             user ids
+
     rmdir      Delete a folder in the Roambi Repository
       Usage: rmdir [options]
         Options:
               --folder
              folder to be deleted
+
+    version      Usage: version [options]
+
+    mkdir      Create a folder in the Roambi Repository
+      Usage: mkdir [options]
+        Options:
+              --folder
+             parent folder
+              --permission
+             set permissions for folder
+              --title
+             title of the new folder
+
+    publish-with-file      Refresh a Roambi document based on data in a local file
+      Usage: publish-with-file [options]
+        Options:
+              --file
+             local source file
+              --folder
+             remote folder destination
+              --permission
+             set permissions for new document
+              --template
+             template rbi
+              --title
+             title of the new document
 ```
 
-Notes
-All RFS Paths should be prepended with “/”.  This is a hack to differentiate them from UIDs.
+### Notes
+* All RFS Paths should be prepended with “/”.  This is a hack to differentiate them from UIDs.
