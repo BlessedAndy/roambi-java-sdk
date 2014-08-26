@@ -1,5 +1,7 @@
 # roambi-java-sdk
 
+[![Build Status](https://api.travis-ci.org/Roambi/roambi-java-sdk.png)](https://api.travis-ci.org/Roambi/roambi-java-sdk)
+
 The Roambi Java Software Development Kit (SDK) provides client libraries and documentation
 to help you integrate with the Roambi platform's API.  The core functionality of the Roambi API is to publish your data as Roambi visualizations.
 
