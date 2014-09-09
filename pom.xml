@@ -2,9 +2,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mellmo.roambi.api</groupId>
-    <artifactId>api-client</artifactId>
+    <artifactId>java-sdk</artifactId>
     <version>0.0.2-SNAPSHOT</version>
-    <name>Roambi API Java Client</name>
+    <packaging>pom</packaging>
+    <name>Roambi API Java SDK</name>
+
+    <modules>
+      <module>base-client</module>
+      <module>roambi-api-java-client</module>
+      <module>roambi-script</module>
+    </modules>
 
     <build>
         <plugins>
@@ -15,63 +22,6 @@
                     <source>1.6</source>
                     <target>1.6</target>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <version>1.10.b1</version>
-                <configuration>
-                    <header>src/etc/license_header.txt</header>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>format</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.8</version>
-                <executions>
-                    <execution>
-                        <id>add license header</id>
-                        <!-- before package phase -->
-                        <phase>test</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                        </goals>
-                        <configuration>
-                            <sources>
-                                <source>${basedir}/src/etc</source>
-                            </sources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
-                <configuration>
-                    <includePom>true</includePom>
-                    <forceCreation>true</forceCreation>
-                    <includes>
-                        <include>**/*.*</include>
-                        <include>${basedir}/src/etc/license_header.txt</include>
-                    </includes>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -128,10 +78,5 @@
     </build>
 
     <dependencies>
-        <dependency>
-            <groupId>com.mellmo.roambi.api</groupId>
-            <artifactId>base-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>

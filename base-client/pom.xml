@@ -2,9 +2,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mellmo.roambi.api</groupId>
-    <artifactId>api-client</artifactId>
+    <artifactId>base-client</artifactId>
     <version>0.0.2-SNAPSHOT</version>
-    <name>Roambi API Java Client</name>
+    <name>Base API Client</name>
 
     <build>
         <plugins>
@@ -129,9 +129,54 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.mellmo.roambi.api</groupId>
-            <artifactId>base-client</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client</artifactId>
+            <version>1.14.1-beta</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-gson</artifactId>
+            <version>1.14.1-beta</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
+        <dependency>
+        	<groupId>commons-collections</groupId>
+        	<artifactId>commons-collections</artifactId>
+        	<version>3.2.1</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.apache.commons</groupId>
+        	<artifactId>commons-collections4</artifactId>
+        	<version>4.0</version>
+		    </dependency>
+        <dependency>
+        	<groupId>org.apache.commons</groupId>
+        	<artifactId>commons-lang3</artifactId>
+        	<version>3.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>13.0</version>
         </dependency>
     </dependencies>
 </project>
