@@ -33,6 +33,7 @@ import com.mellmo.roambi.api.model.User;
 public abstract class BaseApiClient extends RESTClient {
 	public static final String TITLE = "title";
 	protected static final String CODE = "code";
+	protected static final String REDIRECT_URI = "redirect_uri";
 	protected static final String GRANT_TYPE = "grant_type";
 	protected static final String ACCESS_TOKEN = "access_token";
 	protected static final String REFRESH_TOKEN = "refresh_token";
@@ -143,7 +144,7 @@ public abstract class BaseApiClient extends RESTClient {
 			authorizationCode = getAuthorizationCodeFromServer(authUrl, username, password);
 		}
 		return getAccessTokenFromServer(buildAccessTokenHttpMethod(new NameValuePair(CODE, authorizationCode),
-																   new NameValuePair("redirect_uri", redirect_uri),
+																   new NameValuePair(REDIRECT_URI, redirect_uri),
 																   new NameValuePair(GRANT_TYPE, "authorization_code")));
 	}
 	
