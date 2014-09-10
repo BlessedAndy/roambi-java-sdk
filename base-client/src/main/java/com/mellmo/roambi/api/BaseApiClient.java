@@ -108,14 +108,7 @@ public abstract class BaseApiClient extends RESTClient {
 
 	public abstract List<Account> getUserAccounts() throws ApiException, IOException;
 	
-	private User getCurrentUser() throws ApiException, IOException {
-		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
-		return (User) new ApiInvocationHandler(buildGetMethod(url)) {
-			public Object onSuccess() throws HttpException, IOException {
-				return User.fromUserResourcesResponse(this.method.getResponseBodyAsString());
-			}
-		}.invokeApi();
-	}
+	public abstract User getCurrentUser() throws ApiException, IOException;
 
 	protected String getAccessToken() throws ApiException {
 		if (!isAuthenticated()) authenticate();

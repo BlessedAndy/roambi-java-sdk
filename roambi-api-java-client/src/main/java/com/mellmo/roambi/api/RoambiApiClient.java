@@ -75,7 +75,7 @@ public class RoambiApiClient extends BaseApiClient {
 		return (List<Account>) handler.invokeApi();
 	}
 	
-	private User getCurrentUser() throws ApiException, IOException {
+	public User getCurrentUser() throws ApiException, IOException {
 		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
 		return (User) new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
