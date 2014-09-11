@@ -62,6 +62,7 @@ public abstract class BaseApiClient extends RESTClient {
     }
     
     public BaseApiClient(String serviceUrl, int apiVersion, String accessToken) {
+    	this.baseServiceUrl = normalizeServiceUrl(serviceUrl);
     	this.serviceUri = URI.create(serviceUrl);
     	this.apiVersion = apiVersion;
     	this.accessToken = accessToken;
