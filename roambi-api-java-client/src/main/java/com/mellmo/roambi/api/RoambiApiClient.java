@@ -9,9 +9,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetAddress;
 import java.net.URI;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,23 +18,16 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Transformer;
 import org.apache.commons.httpclient.Credentials;
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
-import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethodBase;
-import org.apache.commons.httpclient.NTCredentials;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.AuthScope;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.apache.log4j.Logger;
 
-import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
-import com.google.common.base.Strings;
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.Account;
@@ -54,7 +45,7 @@ import com.mellmo.roambi.api.requests.AddPermissionsRequest;
 import com.mellmo.roambi.api.requests.RemovePermissionsRequest;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
-public class RoambiApiClient extends RESTClient {
+public class RoambiApiClient extends BaseApiClient {
 	protected static final String PORTAL_UID = "portalUid";
 	protected static final String FOLDERUID = "folderUid";
 	protected static final String FILE_UID = "fileUid";
@@ -65,76 +56,13 @@ public class RoambiApiClient extends RESTClient {
 	public static final String FOLDER_UID = "folder_uid";
 	public static final String OVERWRITE = "overwrite";
 	public static final String TEMPLATE_UID = "template_uid";
-	public static final String TITLE = "title";
-	private static final String CODE = "code";
-	private static final String GRANT_TYPE = "grant_type";
-	private static final String ACCESS_TOKEN = "access_token";
-	private static final String REFRESH_TOKEN = "refresh_token";
-	protected static final String ACCEPT = "Accept";
-	public static final String DEFAULT_API_SERVICE_BASE_URL = "https://api.roambi.com/";
-	private static final String TOKEN_ENDPOINT = "token";
-	private static final String AUTHORIZE_ENDPOINT = "authorize";
-	protected static final Logger LOG = Logger.getLogger(RoambiApiClient.class);
-
-	private String clientId;
-	private String clientSecret;
-	private RoambiApiApplication application;
-	private int apiVersion;
-	private String baseServiceUrl;
-	private URI serviceUri;
-	private HttpClient httpClient;
-	private String authorizationCode;
-	private String accessToken;
-	private String refreshToken;
-	private User currentUser = null;
-	private String currentAccountUid = null;
-    private String redirect_uri = "roambi-api://client.roambi.com/authorize";
-    private int retries = 0;
-
+	
 	public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, RoambiApiApplication app) {
-		this.clientId = clientId;
-		this.clientSecret = clientSecret;
-		this.application = app;
-		this.apiVersion = apiVersion;
-		this.baseServiceUrl = normalizeServiceUrl(serviceUrl);
-		this.serviceUri = URI.create(serviceUrl);
-        this.redirect_uri = redirect_uri;
-
-		httpClient = new HttpClient();
-		httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
-	}
-
-    public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, String proxyUserDomain, RoambiApiApplication app) throws IOException {
-        this(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, app);
-        HostConfiguration config = httpClient.getHostConfiguration();
-        if (proxyUsername != null) {
-        	if (proxyUserDomain == null) {
-        		proxyUserDomain = "";
-        	}
-        	LOG.info("providing credentials for "+proxyHost+":"+proxyPort+" un="+proxyUsername);
-			httpClient.getState().setProxyCredentials(new AuthScope(proxyHost, proxyPort,AuthScope.ANY_REALM), 
-					new NTCredentials(proxyUsername, proxyPassword, InetAddress.getLocalHost().getCanonicalHostName(), proxyUserDomain));
-        }
-        config.setProxy(proxyHost, proxyPort);
-    }
-
-	public void setCurrentAccount(String accountUid) {
-		currentAccountUid = accountUid;
+		super(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, app);
 	}
 	
-	public User currentUser() throws ApiException, IOException {
-		if (currentUser == null) {
-			currentUser = getCurrentUser();
-		}
-		return currentUser;
-	}
-
-	public boolean isAuthenticated() {
-		return (accessToken != null);
-	}
-	
-	public void setAccessToken(final String accessToken) {
-		this.accessToken = accessToken;
+	public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, String proxyUserDomain, RoambiApiApplication app) throws IOException {
+		super(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, proxyHost, proxyPort, proxyUsername, proxyPassword, proxyUserDomain, app);
 	}
 
 	public List<Account> getUserAccounts() throws ApiException, IOException {
@@ -147,7 +75,7 @@ public class RoambiApiClient extends RESTClient {
 		return (List<Account>) handler.invokeApi();
 	}
 	
-	private User getCurrentUser() throws ApiException, IOException {
+	public User getCurrentUser() throws ApiException, IOException {
 		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
 		return (User) new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
@@ -494,53 +422,8 @@ public class RoambiApiClient extends RESTClient {
 															}
 														}).toArray(new String[params.length]));
 	}
-	
-	protected String getAccessToken() throws ApiException {
-		if (!isAuthenticated()) authenticate();
-		return this.accessToken;
-	}
-	
-	private String getAccountUid() {
-		checkArgument(!Strings.isNullOrEmpty(currentAccountUid), "Current Account is not set.");
-		return currentAccountUid;
-	}
 
-	private boolean authenticate() throws ApiException {
-		if (accessToken == null) {
-			accessToken = getAccessTokenFromServer();
-
-//            //set the default account
-//            if(accessToken != null) {
-//                List<Account> accounts = getUserAccounts();
-//                if (accounts.size() > 0) {
-//                    setCurrentAccount(accounts.get(0).getUid());
-//                }
-//            }
-		}
-		
-		return isAuthenticated();
-	}
-	
-	private String getAccessTokenFromServer() throws ApiException {
-		String url = new AuthorizationCodeRequestUrl(getAuthorizeServerUrl(), clientId)
-		            		.setRedirectUri(redirect_uri)
-		            		.build();
-
-		String accessToken = authenticateWithUserCredentials(url, application.getUsername(), application.getPassword());
-
-		return accessToken;
-	}
-
-	private String authenticateWithUserCredentials(String authUrl, String username, String password) throws ApiException {
-		if (authorizationCode == null) {
-			authorizationCode = getAuthorizationCodeFromServer(authUrl, username, password);
-		}
-		return getAccessTokenFromServer(buildAccessTokenHttpMethod(new NameValuePair(CODE, authorizationCode),
-																   new NameValuePair("redirect_uri", redirect_uri),
-																   new NameValuePair(GRANT_TYPE, "authorization_code")));
-	}
-	
-	private String getAuthorizationCodeFromServer(String authUrl, String username, String password) throws ApiException {
+	protected String getAuthorizationCodeFromServer(String authUrl, String username, String password) throws ApiException {
 
         if (username == null || password == null) {
             throw new IllegalArgumentException("user name and password cannot be null");
@@ -559,9 +442,6 @@ public class RoambiApiClient extends RESTClient {
                 int result = httpClient.executeMethod(authPost);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Auth result: " + result);
-                    //for (Header header : authPost.getResponseHeaders()) {
-                    //	log.debug(header.getName() + " :: " + header.getValue());
-                    //}
                     String responseBody = authPost.getResponseBodyAsString();
                     LOG.debug(responseBody);
                 }
@@ -607,7 +487,7 @@ public class RoambiApiClient extends RESTClient {
 		return authorizationCode;
 	}
 	
-	private String getAccessTokenFromServer(final HttpMethodBase method) throws ApiException {
+	protected String getAccessTokenFromServer(final HttpMethodBase method) throws ApiException {
 		try {
 			final int result = httpClient.executeMethod(method);
 			if (result == 400 || result == 401) {
@@ -633,130 +513,6 @@ public class RoambiApiClient extends RESTClient {
 		}
 	}
 
-	public boolean refreshToken() throws ApiException {
-		checkArgument(!Strings.isNullOrEmpty(this.refreshToken), "refresh_token is not set.");
-		accessToken = null;
-		accessToken = getAccessTokenFromServer(buildAccessTokenHttpMethod(new NameValuePair(GRANT_TYPE, REFRESH_TOKEN),
-																		  new NameValuePair(REFRESH_TOKEN, this.refreshToken)));
-		return isAuthenticated();
-	}
-
-	private HttpMethodBase buildAccessTokenHttpMethod(final NameValuePair... params) {
-		final PostMethod method = new PostMethod(getTokenServerUrl());
-		method.setRequestHeader(ACCEPT, APPLICATION_JSON);
-		method.addParameter("client_secret", clientSecret);
-		method.addParameter("client_id", clientId);
-		for (NameValuePair param:params) {
-			method.addParameter(param.getName(), param.getValue());
-		}
-		return method;
-	}
-
-	private void handleApiException(Exception ex) {
-		LOG.info("Exception while communicating with the Roambi API: " + ex.getLocalizedMessage());
-	}
-
-	public String getBaseServiceUrl() {
-		return baseServiceUrl;
-	}
-
-	public String getAuthorizeServerUrl() {
-		return baseServiceUrl + apiVersion + "/" + AUTHORIZE_ENDPOINT; 
-	}
-
-	public String getTokenServerUrl() {
-		return baseServiceUrl + apiVersion + "/" + TOKEN_ENDPOINT; 
-	}
-
-
-	private String normalizeServiceUrl(String serviceUrl) {
-		if (serviceUrl.endsWith("/")) {
-			return serviceUrl;
-		}
-		else {
-			return serviceUrl + "/";
-		}
-	}
-
-	private String serviceHost() {
-		return this.serviceUri.getHost();
-	}
-	
-	private int servicePort() {
-		return this.serviceUri.getPort();
-	}
-	
-	public int getRetries() {
-		return retries;
-	}
-
-	public void setRetries(int retries) {
-		this.retries = retries;
-	}
-
-
-	private abstract class ApiInvocationHandler {
-		protected HttpMethodBase method = null;
-
-		public ApiInvocationHandler(HttpMethodBase method) {
-			this.method = method;
-		}
-
-		public abstract Object onSuccess() throws HttpException, IOException;
-		
-		public Object invokeApi() throws ApiException, IOException {
-			int tries = 0;
-			try {
-				do {
-					tries++;
-					if (LOG.isDebugEnabled() && retries > 0) {
-						LOG.debug(String.format("invokeApi: tries=%d, retries=%d", tries, retries));
-					}
-					try {
-						return invoke();
-					} catch (HttpException e) {
-						LOG.error(logError(tries, e));
-						if (tries > retries)	throw e;
-						
-					} catch (IOException e) {
-						LOG.error(logError(tries, e));
-						if (tries > retries)	throw e;
-					}
-					try {
-						Thread.sleep(tries * 1000);	// TODO: might need to change how long thread sleeps
-					} catch (InterruptedException e) {
-						LOG.warn(e.getMessage());
-					}
-				} while (tries <= retries);
-			} finally {
-				if (method != null) {
-					method.releaseConnection();
-				}
-			}
-			return null;	// this line of code is not reachable. eclipse is so stupid
-		}
-		
-		private Object invoke() throws HttpException, IOException, ApiException {
-			httpClient.executeMethod(method);
-			if (method.getStatusCode() == 200) {
-				return onSuccess();
-			}
-			else if (method.getStatusCode() == 202) {
-				return ApiJob.fromApiResponse(method.getResponseBodyAsStream());
-			}
-            else if (isRateLimitExceeded(method)) {
-                throw new ApiException(403, "Forbidden", "Api Rate Limit Exceeded");
-            }
-			else {
-				throw ApiException.fromApiResponse(method.getStatusCode(), method.getResponseBodyAsStream());
-			}
-		}
-
-		private String logError(int tries, final Exception e) {
-			return String.format("tries=%d, retries=%d, %s", tries, retries, e.getMessage());
-		}
-	}
-	
 	protected ContentItem invokeMethodGetContentItemApiDetailsResponse(final HttpMethodBase method, final boolean isFolder) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
@@ -771,33 +527,4 @@ public class RoambiApiClient extends RESTClient {
 		return (ContentItem) handler.invokeApi();
 	}
 
-	private boolean isRateLimitExceeded(final HttpMethodBase method) {
-		// api endpoint also throw 403 error which is not api rate limit exceeded error. So if response content-type is json, then we take error message from the body instead
-		/* 
-		 * when api requests exceed max limit the server response is
-		 * 403
-		 * Content-Type: text/plain;charset=utf-8
-		 * response body: 403 Forbidden (Rate Limit Exceeded)
-		 */
-		boolean result = (method.getStatusCode() == 403);
-		if (result) {
-			final Header header = method.getResponseHeader("Content-Type");
-			if (header != null) {
-				final String value = header.getValue();
-				if (value != null && value.indexOf(APPLICATION_JSON) > -1) {
-					result = false;
-				}
-				else if (LOG.isDebugEnabled()) {
-					LOG.debug("Server return 403 status code .... ");
-					LOG.debug("Content-Type: " + value);
-					try {
-						LOG.debug("Body: " + method.getResponseBodyAsString());
-					} catch (IOException e) {
-						LOG.debug(e.getMessage());
-					}
-				}
-			}
-		}
-		return result;
-	}
 }

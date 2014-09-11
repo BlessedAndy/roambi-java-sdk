@@ -1,0 +1,3 @@
+[submodule "roambi-script"]
+	path = roambi-script
+	url = https://github.com/Roambi/roambi-script

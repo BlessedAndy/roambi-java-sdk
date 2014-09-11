@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.api;
 
+import org.apache.log4j.Logger;
+
 
 public enum RoambiApiResource {
 
@@ -188,6 +190,8 @@ public enum RoambiApiResource {
 	protected static final String FILES = "files";
 	protected static final String ACCOUNTS = "accounts";
 
+	private static final Logger LOG = Logger.getLogger(RoambiApiResource.class);
+
 	public abstract String url(String baseUrl, int apiVersion, String accountUid, String...params);
 	
 	private static String normalizeServiceUrl(String serviceUrl) {
@@ -211,8 +215,8 @@ public enum RoambiApiResource {
 		if (builder.length() > 0) {
 			builder.setLength(builder.length() - 1);
 		}
-		if (RoambiApiClient.LOG.isDebugEnabled()) {
-			RoambiApiClient.LOG.debug("Hitting url:" + builder.toString());
+		if (LOG.isDebugEnabled()) {
+			LOG.debug("Built API url:" + builder.toString());
 		}
 		return builder.toString();
 	}
