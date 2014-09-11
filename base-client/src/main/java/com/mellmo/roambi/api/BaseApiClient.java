@@ -60,6 +60,12 @@ public abstract class BaseApiClient extends RESTClient {
     
     public BaseApiClient() {
     }
+    
+    public BaseApiClient(String serviceUrl, int apiVersion, String accessToken) {
+    	this.serviceUri = URI.create(serviceUrl);
+    	this.apiVersion = apiVersion;
+    	this.accessToken = accessToken;
+    }
 
 	public BaseApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, RoambiApiApplication app) {
 		this.clientId = clientId;

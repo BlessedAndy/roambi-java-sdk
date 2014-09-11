@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.activation.MimetypesFileTypeMap;
 
@@ -206,6 +208,27 @@ public abstract class RESTClient {
 	
 	protected PostMethod buildPostMethod(final String url, final NameValuePair... params) throws ApiException {
 		return buildPostMethod(url, FORM_URL_ENCODED, params);
+	}
+	
+	public PostMethod buildFileUploadMethod(final String url, Map<String, Object> params) throws ApiException, FileNotFoundException {
+		final PostMethod method = buildPostMethod(getAccessToken(), url);
+
+		List<Part> parts = new ArrayList<Part>();
+		Part part = null;
+		for (Entry<String, Object> param : params.entrySet()) {
+			if (param.getValue().getClass() == File.class) {
+				part = new FilePart(param.getKey(), (File) param.getValue());
+			}
+			else {
+				part = new StringPart(param.getKey(), param.getValue().toString());
+			}
+			parts.add(part);
+		}
+		
+		final MultipartRequestEntity multipartEntity = new MultipartRequestEntity(parts.toArray(new Part[params.size()]), method.getParams());
+		method.setRequestEntity(multipartEntity);
+		
+		return method;
 	}
 	
 	protected PostMethod buildPostMethod(final String url, final Part... parts) throws ApiException {
