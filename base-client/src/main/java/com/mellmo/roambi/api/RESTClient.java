@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 
 import com.google.common.base.Strings;
 import com.mellmo.roambi.api.exceptions.ApiException;
+import com.mellmo.roambi.api.http.FilePartDescriptor;
 import com.mellmo.roambi.api.model.IBaseModel;
 import com.mellmo.roambi.api.utils.JsonUtils;
 
@@ -218,6 +219,10 @@ public abstract class RESTClient {
 		for (Entry<String, Object> param : params.entrySet()) {
 			if (param.getValue().getClass() == File.class) {
 				part = new FilePart(param.getKey(), (File) param.getValue());
+			}
+			else if (param.getValue().getClass() == FilePartDescriptor.class) {
+				FilePartDescriptor descriptor = (FilePartDescriptor) param;
+				part = new FilePart(param.getKey(), descriptor.getFileName(), (File) param.getValue());
 			}
 			else {
 				part = new StringPart(param.getKey(), param.getValue().toString());
