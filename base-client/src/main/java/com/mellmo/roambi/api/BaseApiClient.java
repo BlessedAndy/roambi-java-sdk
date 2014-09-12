@@ -66,6 +66,9 @@ public abstract class BaseApiClient extends RESTClient {
     	this.serviceUri = URI.create(serviceUrl);
     	this.apiVersion = apiVersion;
     	this.accessToken = accessToken;
+
+    	httpClient = new HttpClient();
+		httpClient.getParams().setCookiePolicy(CookiePolicy.BROWSER_COMPATIBILITY);
     }
 
 	public BaseApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, RoambiApiApplication app) {
@@ -83,6 +86,10 @@ public abstract class BaseApiClient extends RESTClient {
 
     public BaseApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, String proxyUserDomain, RoambiApiApplication app) throws IOException {
         this(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, app);
+        clientProxyConfig(proxyHost, proxyPort, proxyUsername, proxyPassword, proxyUserDomain);
+    }
+    
+    private void clientProxyConfig(String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, String proxyUserDomain) throws IOException {
         HostConfiguration config = httpClient.getHostConfiguration();
         if (proxyUsername != null) {
         	if (proxyUserDomain == null) {
