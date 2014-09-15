@@ -221,8 +221,8 @@ public abstract class RESTClient {
 				part = new FilePart(param.getKey(), (File) param.getValue());
 			}
 			else if (param.getValue().getClass() == FilePartDescriptor.class) {
-				FilePartDescriptor descriptor = (FilePartDescriptor) param;
-				part = new FilePart(param.getKey(), descriptor.getFileName(), (File) param.getValue());
+				FilePartDescriptor descriptor = (FilePartDescriptor) param.getValue();
+				part = new FilePart(param.getKey(), descriptor.getFileName(), descriptor.getFile());
 			}
 			else {
 				part = new StringPart(param.getKey(), param.getValue().toString());
