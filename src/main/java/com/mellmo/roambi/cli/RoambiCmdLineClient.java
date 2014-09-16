@@ -74,12 +74,11 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
 
             String line = lineScanner.nextLine();
 
-            Scanner tokenScanner = new Scanner(line);
-            tokenScanner.useDelimiter("\\p{javaWhitespace}");
+            LineTokenizer tokenizer = new LineTokenizer(line);
 
             ArrayList<String> args = new ArrayList<String>();
-            while( tokenScanner.hasNext()) {
-                args.add(tokenScanner.next());
+            while( tokenizer.hasNext()) {
+                args.add(tokenizer.next());
             }
             if (! args.isEmpty()) {
                 RoambiCommandClient client = new RoambiCommandClient(this);
