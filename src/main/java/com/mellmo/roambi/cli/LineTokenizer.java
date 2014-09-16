@@ -9,6 +9,7 @@ package com.mellmo.roambi.cli;
  */
 public class LineTokenizer {
 
+    private char commentChar = '#';
     private char quoteChar = '"';
     private String line;
     private String nextToken = null;
@@ -35,6 +36,10 @@ public class LineTokenizer {
         return token;
     }
 
+    private boolean isCommentChar(char ch) {
+        return ch == commentChar;
+    }
+
     private boolean isQuote(char ch) {
         return ch == quoteChar;
     }
@@ -49,7 +54,7 @@ public class LineTokenizer {
         }
         boolean insideQuotes = false;
 
-        StringBuilder buffer = new StringBuilder(line.length());
+        StringBuilder buffer = null;
         for( ;  currentPos < line.length() ; currentPos++) {
             char ch = line.charAt(currentPos);
 
@@ -59,16 +64,28 @@ public class LineTokenizer {
 
             if (! insideQuotes) {
                 if (Character.isWhitespace(ch)) {
-                    nextToken = buffer.toString();
-                    return;
+                    break;
                 }
+
+                if (isCommentChar(ch)) {
+                    currentPos = line.length();
+                    break;
+                }
+
             }
 
             if (! isQuote(ch)) {
+                if (buffer == null) {
+                    buffer = new StringBuilder(line.length());
+                }
                 buffer.append(ch);
             }
         }
-        nextToken = buffer.toString();
+        if (buffer == null) {
+            nextToken = null;
+        } else {
+            nextToken = buffer.toString();
+        }
     }
 
     private void skipWhitespace() {

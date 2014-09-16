@@ -92,4 +92,29 @@ public class LineTokenizerTest {
         assertEquals("three", args.get(1));
     }
 
+    @Test
+    public void testStartComment() {
+
+        ArrayList<String> args = tokenize("#    \"one two\" three     ");
+
+        assertEquals(0, args.size());
+    }
+
+    @Test
+    public void testLeadingSpaceStartComment() {
+
+        ArrayList<String> args = tokenize("    #    \"one two\" three     ");
+
+        assertEquals(0, args.size());
+    }
+
+    @Test
+    public void testComment() {
+
+        ArrayList<String> args = tokenize("    \"one two\" # three     ");
+
+        assertEquals(1, args.size());
+        assertEquals("one two", args.get(0));
+
+    }
 }
