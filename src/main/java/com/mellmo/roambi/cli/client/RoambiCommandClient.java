@@ -5,10 +5,10 @@
 package com.mellmo.roambi.cli.client;
 
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.reflections.Reflections;
@@ -31,7 +31,7 @@ public class RoambiCommandClient {
 
 
     //commands
-    private Map<String, CommandBase> commands = new HashMap<String,CommandBase>();
+    private Map<String, CommandBase> commands = new TreeMap<String,CommandBase>();
 
     private JCommander jct;
 
@@ -71,7 +71,6 @@ public class RoambiCommandClient {
                 if(!Modifier.isAbstract(clazz.getModifiers())) {
                     CommandBase obj = (CommandBase) clazz.newInstance();
                     commands.put(obj.getName(), obj);
-                    jct.addCommand(obj.getName(), obj);
                 }
             } catch (IllegalAccessException e) {
                 logger.error("could not add command: " + clazz.getName()+". skipping.");
@@ -79,6 +78,13 @@ public class RoambiCommandClient {
                 logger.error("could not add command: " + clazz.getName()+". skipping.");
             }
         }
+
+        // do another iteration, so that commands are added to jct
+        // in ascending order
+        for( Map.Entry<String, CommandBase> entry : commands.entrySet()) {
+            jct.addCommand(entry.getKey(), entry.getValue());
+        }
+
     }
 
     protected String parse(String [] args) {
