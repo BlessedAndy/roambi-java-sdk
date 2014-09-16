@@ -5,22 +5,21 @@
 package com.mellmo.roambi.cli;
 
 
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Scanner;
 
 import org.apache.log4j.Logger;
-import org.reflections.Reflections;
 
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
+import com.beust.jcommander.converters.FileConverter;
+import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.cli.client.RoambiClientWrapper;
-import com.mellmo.roambi.cli.commands.CommandBase;
-import com.mellmo.roambi.cli.commands.ConfigureCommand;
-import com.mellmo.roambi.cli.commands.ShowVersionCommand;
+import com.mellmo.roambi.cli.client.RoambiCommandClient;
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,95 +30,86 @@ import com.mellmo.roambi.cli.commands.ShowVersionCommand;
  */
 
 @Parameters(separators = "=")
-public class RoambiCmdLineClient {
-    private static Logger logger = Logger.getLogger(RoambiCmdLineClient.class);
-    private JCommander jct;
+public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiCommandClient.ClientConfiguration {
+
     private RoambiClientWrapper clientWrapper;
 
-    //commands
-    private Map<String, CommandBase> commands = new HashMap<String,CommandBase>();
-
     //top-level options
-    @Parameter (names="-props", description = "Property file location")
+    @Parameter (names={"-props", "--props"}, description = "Property file location")
     private String propertiesFile;
 
     @Parameter(names = "--help", description = "Shows help", help = true)
     private boolean help;
 
+    @Parameter(names = "--file", description = "Script File", converter = FileConverter.class)
+    private File scriptFile;
 
-    public RoambiCmdLineClient (String [] args) {
-        jct = new JCommander(this);
-        registerCommands(args);
-
-        if(propertiesFile != null) {
-            clientWrapper = new RoambiClientWrapper(propertiesFile);
-        }
+    public RoambiCmdLineClient () {
+        super();
+        setConfiguration(this);
     }
 
-    //output to stdout
-    public static void message(String txt) {
-        System.out.println(txt);
-    }
-
-    //enumerates and adds all subclasses of CommandBase found in com.mellmo.roambi.cli.commands
-    private void registerCommands(String [] args) {
-
-        Reflections reflections = new Reflections("com.mellmo.roambi.cli.commands");
-
-        Set<Class<? extends CommandBase>> subTypes = reflections.getSubTypesOf(CommandBase.class);
-
-        Iterator <Class <?extends CommandBase>> itr = subTypes.iterator();
-        while(itr.hasNext()) {
-            Class<?extends CommandBase> clazz = itr.next();
-            logger.info("registering command class: " + clazz.getName());
-
-            try {
-                if(!Modifier.isAbstract(clazz.getModifiers())) {
-                    CommandBase obj = (CommandBase) clazz.newInstance();
-                    commands.put(obj.getName(), obj);
-                    jct.addCommand(obj.getName(), obj);
-                }
-            } catch (IllegalAccessException e) {
-                logger.error("could not add command: " + clazz.getName()+". skipping.");
-            } catch (InstantiationException e) {
-                logger.error("could not add command: " + clazz.getName()+". skipping.");
-            }
-        }
-
-        jct.parse(args);
-    }
-
-    public void execute() throws Exception {
-        String cmd = jct.getParsedCommand();
-        if(cmd != null) {
-
-            CommandBase cb = commands.get(cmd);
-            if(cb==null || cb.getHelp()) {
-                jct.usage(cb.getName());
-            }
-            else if (cb instanceof ShowVersionCommand) {
-            	((ShowVersionCommand)cb).execute(null);
-            	return;
-            }
-            else {
-                //kludge
-                if(cb instanceof ConfigureCommand) {
-                   ((ConfigureCommand)cb).setPropertiesPath(propertiesFile);
-                }
-                cb.execute(clientWrapper.getClient());
+    @Override
+    protected void doExecute(String cmd) throws Exception {
+        if (cmd == null) {
+            if (scriptFile != null) {
+                executeScriptFile();
                 return;
             }
         }
-        jct.usage();
+        super.doExecute(cmd);
+    }
+
+    private void executeScriptFile() throws Exception {
+        BufferedReader reader = new BufferedReader(new FileReader(scriptFile));
+
+        executeReader(reader);
+    }
+
+    private void executeReader(Reader reader) throws Exception {
+
+        Scanner lineScanner = new Scanner(reader);
+
+        while (lineScanner.hasNext()) {
+
+            String line = lineScanner.nextLine();
+
+            Scanner tokenScanner = new Scanner(line);
+            tokenScanner.useDelimiter("\\p{javaWhitespace}");
+
+            ArrayList<String> args = new ArrayList<String>();
+            while( tokenScanner.hasNext()) {
+                args.add(tokenScanner.next());
+            }
+            if (! args.isEmpty()) {
+                RoambiCommandClient client = new RoambiCommandClient(this);
+                client.execute(args.toArray(new String[]{}));
+            }
+        }
+    }
+
+    // ClientConfiguration
+    public String getPropertiesFile() {
+        return propertiesFile;
+    }
+
+    public RoambiApiClient getClient() {
+        if (clientWrapper == null) {
+            if (getPropertiesFile() == null) {
+                throw new RuntimeException("Property file was not specified.");
+            }
+            clientWrapper = new RoambiClientWrapper(propertiesFile);
+        }
+        return clientWrapper.getClient();
     }
 
     public static void main (String[] args) {
         try {
-            RoambiCmdLineClient cmd = new RoambiCmdLineClient(args);
-            cmd.execute();
+            RoambiCmdLineClient cmd = new RoambiCmdLineClient();
+            cmd.execute(args);
             Logger.getLogger(RoambiCmdLineClient.class).info("Finished.");
         } catch (Exception e) {
-            Logger.getLogger(RoambiCmdLineClient.class).error("Failed. " + e.getLocalizedMessage());
+            Logger.getLogger(RoambiCmdLineClient.class).error("Failed. " + e.getLocalizedMessage(), e);
             System.exit(1);
         }
     }

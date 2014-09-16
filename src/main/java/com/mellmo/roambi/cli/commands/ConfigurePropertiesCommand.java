@@ -4,16 +4,17 @@
  */
 package com.mellmo.roambi.cli.commands;
 
-import com.beust.jcommander.Parameters;
-import com.mellmo.roambi.api.RoambiApiClient;
-import org.apache.log4j.Logger;
-
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Properties;
 import java.util.Scanner;
+
+import org.apache.log4j.Logger;
+
+import com.beust.jcommander.Parameters;
+import com.mellmo.roambi.api.RoambiApiClient;
 
 
 /**
@@ -61,6 +62,9 @@ public class ConfigurePropertiesCommand extends ConfigureCommand {
 
     @Override
     public void execute(RoambiApiClient client) throws Exception {
+        if (propFile == null) {
+            throw new RuntimeException("properties file is not specified");
+        }
 
         initDestinationFile(propFile);
 
