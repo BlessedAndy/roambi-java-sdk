@@ -4,8 +4,6 @@
  */
 package com.mellmo.roambi.api;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,10 +24,13 @@ import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.protocol.Protocol;
+import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
 import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.exceptions.ApiException;
+import com.mellmo.roambi.api.httpclient.AllTrustingSSLProtocolSocketFactory;
 import com.mellmo.roambi.api.model.Account;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.ContentItem;
@@ -44,6 +45,8 @@ import com.mellmo.roambi.api.model.UserAccount;
 import com.mellmo.roambi.api.requests.AddPermissionsRequest;
 import com.mellmo.roambi.api.requests.RemovePermissionsRequest;
 import com.mellmo.roambi.api.utils.ResponseUtils;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class RoambiApiClient extends BaseApiClient {
 	protected static final String PORTAL_UID = "portalUid";
@@ -64,6 +67,19 @@ public class RoambiApiClient extends BaseApiClient {
 	public RoambiApiClient(String serviceUrl, int apiVersion, String clientId, String clientSecret, String redirect_uri, String proxyHost, int proxyPort, String proxyUsername, String proxyPassword, String proxyUserDomain, RoambiApiApplication app) throws IOException {
 		super(serviceUrl, apiVersion, clientId, clientSecret, redirect_uri, proxyHost, proxyPort, proxyUsername, proxyPassword, proxyUserDomain, app);
 	}
+
+    /**
+     * disables SSL host verification
+     *
+     * Useful when troubleshooting configuration issues.
+     * Not recommended for production use.
+     */
+    public void disableSSLVerification() {
+        ProtocolSocketFactory sslSocketFactory = new AllTrustingSSLProtocolSocketFactory();
+
+        Protocol protocol = new Protocol("https", sslSocketFactory, 443);
+        Protocol.registerProtocol("https", protocol);
+    }
 
 	public List<Account> getUserAccounts() throws ApiException, IOException {
 		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
