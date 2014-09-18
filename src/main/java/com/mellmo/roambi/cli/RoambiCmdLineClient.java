@@ -35,8 +35,8 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     private RoambiClientWrapper clientWrapper;
 
     //top-level options
-    @Parameter (names={"-props", "--props"}, description = "Property file location")
-    private String propertiesFile;
+    @Parameter (names={"-props", "--props"}, description = "Property file location. If not specified, default to roambi-api-cli.properties")
+    private String propertiesFile = "roambi-api-cli.properties";
 
     @Parameter(names = "--help", description = "Shows help", help = true)
     private boolean help;
