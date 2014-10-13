@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -40,6 +41,28 @@ public class ContentItem implements IBaseModel {
     public ContentItem(String uid, String name) {
         setUid(uid);
         setName(name);
+    }
+    
+    protected ContentItem(final JsonObject jsonObject) {
+    	this.name = jsonObject.get("title").getAsString();
+		this.uid = jsonObject.get("uid").getAsString();
+        if (jsonObject.get("permissions") != null) {
+            final JsonObject obj = jsonObject.get("permissions").getAsJsonObject();
+            this.permissions = new Permissions(obj);
+        }
+        this.type = jsonObject.get("file_type").getAsString();
+        final JsonElement element = jsonObject.get("file_size");
+        if (element != null) {
+        	this.size = element.getAsLong();
+        }
+        this.readOnly = jsonObject.get("read_only").getAsBoolean();
+        if (jsonObject.has("updated_at")) {
+        	try {
+				this.updatedDate = getDateValue(jsonObject.get("updated_at").getAsString());
+			} catch (RuntimeException e) {
+				LOG.error(e.getMessage());
+			}
+        }
     }
 
 	public String getUid() {
@@ -87,28 +110,7 @@ public class ContentItem implements IBaseModel {
 	}
 
 	public static ContentItem fromApiListItem(JsonObject jsonObject) {
-		ContentItem item = new ContentItem();
-		item.setName(jsonObject.get("title").getAsString());
-		item.setUid(jsonObject.get("uid").getAsString());
-        if(jsonObject.get("permissions")!=null) {
-            JsonObject obj = jsonObject.get("permissions").getAsJsonObject();
-            item.setPermissions(new Permissions(obj));
-        }
-        item.setType(jsonObject.get("file_type").getAsString());
-        final JsonElement element = jsonObject.get("file_size");
-        if (element != null) {
-        	item.setSize(element.getAsLong());
-        }
-        item.setReadOnly(jsonObject.get("read_only").getAsBoolean());
-        if (jsonObject.has("updated_at")) {
-        	try {
-				item.updatedDate = getDateValue(jsonObject.get("updated_at").getAsString());
-			} catch (RuntimeException e) {
-				LOG.error(e.getMessage());
-			}
-        }
-
-		return item;
+		return StringUtils.equals("ANALYTICS", jsonObject.get("file_type").getAsString()) ? new AnalyticsFile(jsonObject) : new ContentItem(jsonObject);
 	}
 	
 	private static Date getDateValue(final String timestamp) {
