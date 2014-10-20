@@ -30,7 +30,7 @@ public class AnalyticsFile extends ContentItem {
 	private String viewType;
 	
 	protected AnalyticsFile(final JsonObject jsonObject) {
-		super(jsonObject);
+		super(ANALYTICS, jsonObject);
 		if (jsonObject.has(LAUNCHPAD_URL)) {
 			this.launchpadUrl = jsonObject.get(LAUNCHPAD_URL).getAsJsonObject().entrySet();
 		}
@@ -69,4 +69,15 @@ public class AnalyticsFile extends ContentItem {
 	public String getViewType() {
 		return viewType;
 	}
+	
+	@Override
+	public boolean isFolder() {
+		return false;
+	}
+	
+	@Override
+	public void setType(final String type) {
+		throw new UnsupportedOperationException("Method not supported");
+    }
+
 }

@@ -50,7 +50,7 @@ public enum RoambiApiResource {
 			return buildApiFilesUrl(baseUrl, apiVersion, accountUid, params[0]);
 		}
 	},
-	DELETE_FOLDER {
+	FOLDERS_UID {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS, params[0]);
 		}
@@ -68,6 +68,11 @@ public enum RoambiApiResource {
 	FOLDER_INFO {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS, params[0], INFO);
+		}
+	},
+	ITEM_INFO {
+		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
+			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, INFO);
 		}
 	},
     GET_JOB {
