@@ -34,6 +34,7 @@ import com.mellmo.roambi.api.httpclient.AllTrustingSSLProtocolSocketFactory;
 import com.mellmo.roambi.api.model.Account;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.ContentItem;
+import com.mellmo.roambi.api.model.Folder;
 import com.mellmo.roambi.api.model.Group;
 import com.mellmo.roambi.api.model.IBaseModel;
 import com.mellmo.roambi.api.model.PagedList;
@@ -277,7 +278,7 @@ public class RoambiApiClient extends BaseApiClient {
 	}
 	
 	public void deleteFolder(final String folderUid) throws ApiException, IOException {
-		final String url = buildUrl(RoambiApiResource.DELETE_FOLDER, required(FOLDERUID, folderUid));
+		final String url = buildUrl(RoambiApiResource.FOLDERS_UID, required(FOLDERUID, folderUid));
 		LOG.debug("folderUid: " + folderUid + " " + invokeMethodGetDeleteResourceResponse(url));
 	}
 	
@@ -299,6 +300,20 @@ public class RoambiApiClient extends BaseApiClient {
 		return result;
 	}
 
+	public Folder enableFolderSync(final String folderUid) throws ApiException, IOException {
+		return setFolderSync(folderUid, true);
+	}
+	
+	public Folder disableFolderSync(final String folderUid) throws ApiException, IOException {
+		return setFolderSync(folderUid, false);
+	}
+	
+	public Folder setFolderSync(final String folderUid, final boolean sync) throws ApiException, IOException {
+		final String url = buildUrl(RoambiApiResource.FOLDERS_UID, required(FOLDERUID, folderUid));
+		final HttpMethodBase method = buildPutMethod(url, required("sync", sync));
+		return (Folder) invokeMethodGetContentItemApiDetailsResponse(method);
+	}
+	
     public ContentItem addPermission(ContentItem contentItem, Group group, RoambiFilePermission permission) throws ApiException, IOException {
     	return addPermission(contentItem, asList("group", group), null, permission);
     }
@@ -389,6 +404,18 @@ public class RoambiApiClient extends BaseApiClient {
     public ContentItem getFolderInfo(final String folderUid) throws ApiException, IOException {
 		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FOLDER_INFO, required(FOLDERUID, folderUid))), true);
 	}
+    
+    public ContentItem getItemInfoById(final String id) throws ApiException, IOException {
+    	return getItemInfo("id", id);
+    }
+    
+    public ContentItem getItemInfoByPath(final String path) throws ApiException, IOException {
+    	return getItemInfo("path", path);
+    }
+    
+    private ContentItem getItemInfo(final String paramName, final String paramValue) throws ApiException, IOException {
+    	return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.ITEM_INFO), required(paramName, paramValue)));
+    }
 
 	public ContentItem getFileInfo(String fileUid) throws ApiException, IOException {
 		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FILE_INFO, required(FILE_UID, fileUid))), false);
@@ -536,11 +563,19 @@ public class RoambiApiClient extends BaseApiClient {
 					return ContentItem.fromApiFolderDetailsResponse(this.method.getResponseBodyAsString());
 				}
 				else {
-					return ContentItem.fromApiDetailsResponse(this.method.getResponseBodyAsString());
+					return ContentItem.fromApiFileDetailsResponse(this.method.getResponseBodyAsString());
 				}
 			}
 		};
 		return (ContentItem) handler.invokeApi();
 	}
-
+	
+	protected ContentItem invokeMethodGetContentItemApiDetailsResponse(final HttpMethodBase method) throws ApiException, IOException {
+		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
+			public Object onSuccess() throws HttpException, IOException {
+				return ContentItem.fromApiItemDetailsResponse(this.method.getResponseBodyAsString());
+			}
+		};
+		return (ContentItem) handler.invokeApi();
+	}
 }

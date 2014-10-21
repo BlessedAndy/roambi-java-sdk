@@ -11,7 +11,6 @@ import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.google.gson.JsonArray;
@@ -20,7 +19,11 @@ import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
 public class ContentItem implements IBaseModel {
-
+	
+	protected static final String UPDATED_AT = "updated_at";
+	protected static final String FILE_TYPE = "file_type";
+	protected static final String ANALYTICS = "ANALYTICS";
+	protected static final String FOLDER = "FOLDER";
 	protected static final Logger LOG = Logger.getLogger(ContentItem.class);
 	private String uid;
 	private String name;
@@ -43,28 +46,32 @@ public class ContentItem implements IBaseModel {
         setName(name);
     }
     
-    protected ContentItem(final JsonObject jsonObject) {
-    	this.name = jsonObject.get("title").getAsString();
+	protected ContentItem(final JsonObject jsonObject) {
+		this(jsonObject.get(FILE_TYPE).getAsString(), jsonObject);
+	}
+	
+	protected ContentItem(final String type, final JsonObject jsonObject) {
+		this.name = jsonObject.get("title").getAsString();
 		this.uid = jsonObject.get("uid").getAsString();
-        if (jsonObject.get("permissions") != null) {
-            final JsonObject obj = jsonObject.get("permissions").getAsJsonObject();
-            this.permissions = new Permissions(obj);
-        }
-        this.type = jsonObject.get("file_type").getAsString();
-        final JsonElement element = jsonObject.get("file_size");
-        if (element != null) {
-        	this.size = element.getAsLong();
-        }
-        this.readOnly = jsonObject.get("read_only").getAsBoolean();
-        if (jsonObject.has("updated_at")) {
-        	try {
-				this.updatedDate = getDateValue(jsonObject.get("updated_at").getAsString());
+		if (jsonObject.get("permissions") != null) {
+			final JsonObject obj = jsonObject.get("permissions").getAsJsonObject();
+			this.permissions = new Permissions(obj);
+		}
+		this.type = type;
+		final JsonElement element = jsonObject.get("file_size");
+		if (element != null) {
+			this.size = element.getAsLong();
+		}
+		this.readOnly = jsonObject.get("read_only").getAsBoolean();
+		if (jsonObject.has(UPDATED_AT)) {
+			try {
+				this.updatedDate = getDateValue(jsonObject.get(UPDATED_AT).getAsString());
 			} catch (RuntimeException e) {
 				LOG.error(e.getMessage());
 			}
-        }
-    }
-
+		}
+	}
+	
 	public String getUid() {
 		return uid;
 	}
@@ -104,13 +111,22 @@ public class ContentItem implements IBaseModel {
 		return fromApiListItem(props.get("folder").getAsJsonObject());
 	}
 	
-	public static ContentItem fromApiDetailsResponse(String json) {
-		JsonObject props = ResponseUtils.responseToObject(json);
+	public static ContentItem fromApiFileDetailsResponse(String json) {
+		final JsonObject props = ResponseUtils.responseToObject(json);
 		return fromApiListItem(props.get("file").getAsJsonObject());
 	}
-
+	
+	public static ContentItem fromApiItemDetailsResponse(final String json) {
+		final JsonObject props = ResponseUtils.responseToObject(json);
+		final String memberName = props.has("file") ? "file" : "folder";
+		return fromApiListItem(props.get(memberName).getAsJsonObject());
+	}
+	
 	public static ContentItem fromApiListItem(JsonObject jsonObject) {
-		return StringUtils.equals("ANALYTICS", jsonObject.get("file_type").getAsString()) ? new AnalyticsFile(jsonObject) : new ContentItem(jsonObject);
+		final String type = jsonObject.get(FILE_TYPE).getAsString();
+		if (ANALYTICS.equals(type))		return new AnalyticsFile(jsonObject);
+		else if (FOLDER.equals(type))	return new Folder(jsonObject);
+		else 							return new ContentItem(type, jsonObject);
 	}
 	
 	private static Date getDateValue(final String timestamp) {
@@ -132,7 +148,7 @@ public class ContentItem implements IBaseModel {
         return size;
     }
 
-    public void setSize(long size) {
+    public void setSize(final long size) {
         this.size = size;
     }
 
@@ -140,7 +156,7 @@ public class ContentItem implements IBaseModel {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
     
@@ -149,6 +165,6 @@ public class ContentItem implements IBaseModel {
 	}
 	
 	public boolean isFolder() {
-		return "FOLDER".equals(this.getType());
+		return FOLDER.equals(this.getType());
 	}
 }
