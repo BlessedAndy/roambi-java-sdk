@@ -163,6 +163,15 @@ Usage: <main class> [options] [command] [command options]
              template rbi
               --title
              title of the new document
+             
+    sync_dir      Set sync of folder(s) in Roambi Repository
+      Usage: sync_dir [options]
+        Options:
+        *     --folders
+             folders to be updated
+          -s, --sync
+             Enable sync for the folder
+             Default: false
 ```
 
 ### Notes
