@@ -60,25 +60,46 @@ By default, the RoambiScript library will display inline help:
 ```
 Usage: <main class> [options] [command] [command options]
   Options:
+        --file
+       Script File
         --help
        Shows help
        Default: false
-    -props
-       Property file location
+    -props, --props
+       Property file location. If not specified, default to
+       roambi-api-cli.properties
   Commands:
-    update      Upload and update a file in the Roambi Repository
-      Usage: update [options]
+    addPermission      add permissions to a file
+      Usage: addPermission [options]
         Options:
-              --file
-             locale file you with to upload
+              --access
+             'view' or 'publish'
+             Default: view
+              --groupIds
+             group ids
               --target
-             target file uid
+             target file
+              --userIds
+             user ids
+
+    configure      Bootstrap a the client .properties file
+      Usage: configure [options]
 
     delete      Delete a file in the Roambi Repository
       Usage: delete [options]
         Options:
               --file
              file to be deleted
+
+    mkdir      Create a folder in the Roambi Repository
+      Usage: mkdir [options]
+        Options:
+              --folder
+             parent folder
+              --permission
+             set permissions for folder
+              --title
+             title of the new folder
 
     publish      Refresh a Roambi document
       Usage: publish [options]
@@ -94,33 +115,19 @@ Usage: <main class> [options] [command] [command options]
               --title
              title of the new document
 
-    addPermission      add permissions to a file
-      Usage: addPermission [options]
-        Options:
-              --access
-             'view' or 'publish'
-             Default: view
-              --groupIds
-             group ids
-              --target
-             target file
-              --userIds
-             user ids
-
-    upload      Upload and create a file in the Roambi Repository
-      Usage: upload [options]
+    publish-with-file      Refresh a Roambi document based on data in a local file
+      Usage: publish-with-file [options]
         Options:
               --file
-             locale file you with to upload
+             local source file
               --folder
              remote folder destination
               --permission
-             set permissions for new file
+             set permissions for new document
+              --template
+             template rbi
               --title
-             title of the new file
-
-    configure      Bootstrap a the client .properties file
-      Usage: configure [options]
+             title of the new document
 
     removePermission      remove permissions to a file
       Usage: removePermission [options]
@@ -138,31 +145,27 @@ Usage: <main class> [options] [command] [command options]
               --folder
              folder to be deleted
 
-    version      Usage: version [options]
-
-    mkdir      Create a folder in the Roambi Repository
-      Usage: mkdir [options]
-        Options:
-              --folder
-             parent folder
-              --permission
-             set permissions for folder
-              --title
-             title of the new folder
-
-    publish-with-file      Refresh a Roambi document based on data in a local file
-      Usage: publish-with-file [options]
+    update      Upload and update a file in the Roambi Repository
+      Usage: update [options]
         Options:
               --file
-             local source file
+             locale file you with to upload
+              --target
+             target file uid
+
+    upload      Upload and create a file in the Roambi Repository
+      Usage: upload [options]
+        Options:
+              --file
+             locale file you with to upload
               --folder
              remote folder destination
               --permission
-             set permissions for new document
-              --template
-             template rbi
+             set permissions for new file
               --title
-             title of the new document
+             title of the new file
+
+    version      Usage: version [options]
 ```
 
 ### Notes
