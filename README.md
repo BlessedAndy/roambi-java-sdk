@@ -66,33 +66,48 @@ Usage: <main class> [options] [command] [command options]
     -props
        Property file location
   Commands:
-    update      Upload and update a file in the Roambi Repository
-      Usage: update [options]
+    ls      List folder content
+      Usage: ls [options]
+        Options:
+        *     --folder
+             parent folder
+
+    publish-with-file      Refresh a Roambi document based on data in a local file
+      Usage: publish-with-file [options]
         Options:
               --file
-             locale file you with to upload
-              --target
-             target file uid
-
-    delete      Delete a file in the Roambi Repository
-      Usage: delete [options]
-        Options:
-              --file
-             file to be deleted
-
-    publish      Refresh a Roambi document
-      Usage: publish [options]
-        Options:
+             local source file
               --folder
              remote folder destination
               --permission
              set permissions for new document
-              --source
-             remote source file
               --template
              template rbi
               --title
              title of the new document
+
+    removePermission      remove permissions to a file
+      Usage: removePermission [options]
+        Options:
+              --groupIds
+             group ids
+              --target
+             target file
+              --userIds
+             user ids
+
+    mkdir      Create a folder in the Roambi Repository
+      Usage: mkdir [options]
+        Options:
+              --folder
+             parent folder
+              --ignoreFailure
+             Do not report error when failed.
+             Default: false
+              --permission
+             set permissions for folder
+              --title
+             title of the new folder
 
     addPermission      add permissions to a file
       Usage: addPermission [options]
@@ -119,18 +134,24 @@ Usage: <main class> [options] [command] [command options]
               --title
              title of the new file
 
+    update      Upload and update a file in the Roambi Repository
+      Usage: update [options]
+        Options:
+              --file
+             locale file you with to upload
+              --target
+             target file uid
+
     configure      Bootstrap a the client .properties file
       Usage: configure [options]
 
-    removePermission      remove permissions to a file
-      Usage: removePermission [options]
+    version      Usage: version [options]
+
+    delete      Delete a file in the Roambi Repository
+      Usage: delete [options]
         Options:
-              --groupIds
-             group ids
-              --target
-             target file
-              --userIds
-             user ids
+              --file
+             file to be deleted
 
     rmdir      Delete a folder in the Roambi Repository
       Usage: rmdir [options]
@@ -138,32 +159,20 @@ Usage: <main class> [options] [command] [command options]
               --folder
              folder to be deleted
 
-    version      Usage: version [options]
-
-    mkdir      Create a folder in the Roambi Repository
-      Usage: mkdir [options]
+    publish      Refresh a Roambi document
+      Usage: publish [options]
         Options:
-              --folder
-             parent folder
-              --permission
-             set permissions for folder
-              --title
-             title of the new folder
-
-    publish-with-file      Refresh a Roambi document based on data in a local file
-      Usage: publish-with-file [options]
-        Options:
-              --file
-             local source file
               --folder
              remote folder destination
               --permission
              set permissions for new document
+              --source
+             remote source file
               --template
              template rbi
               --title
              title of the new document
-             
+
     sync_dir      Set sync of folder(s) in Roambi Repository
       Usage: sync_dir [options]
         Options:
