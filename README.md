@@ -22,8 +22,9 @@ Requirements:
 	* `$ mvn install`
 * The RoambiScript jar file will now be available at `target/roambi-api-cli.jar`
 
-Alternatively, you may download the latest released version here:
-https://s3.amazonaws.com/roambi-api-downloads/roambi-script/latest/roambi-api-cli.jar
+Alternatively, you may download compiled versions here:
+* (Latest Stable) https://s3.amazonaws.com/roambi-api-downloads/roambi-script/latest/roambi-api-cli.jar
+* (Latest Beta) https://s3.amazonaws.com/roambi-api-downloads/roambi-script/beta/roambi-api-cli.jar
 
 ## Usage
 
