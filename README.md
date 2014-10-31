@@ -76,11 +76,7 @@ java -jar roambi-api-cli.jar upload --file A.xlsx --folder XXXX
 java -jar roambi-api-cli.jar upload --file B.xlsx --folder XXXX
 ```
 
-Alternatively, you can create a text file that contains all the commands in a text file, for example,  
-```
-my_file.roambiscript
-```
-with the following content:
+Alternatively, you can create a text file that contains all the commands in a text file, for example, `my_file.roambiscript` with the following content:
 
 ```
 # this is a comment
