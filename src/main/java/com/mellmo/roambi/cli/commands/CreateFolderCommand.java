@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 
@@ -36,6 +37,9 @@ public class CreateFolderCommand extends CommandBase {
     @Parameter(names="--permission", description="set permissions for folder", variableArity = true, required=false)
     private List<String> permissionIds;
 
+    @Parameter(names="--ignoreFailure", description = "Do not report error when failed.", required = false)
+    private boolean ignoreFailure;
+
     @Override
     public String getName() {
         return commandName;
@@ -51,10 +55,19 @@ public class CreateFolderCommand extends CommandBase {
         }
 
         client.currentUser();
-        ContentItem newFolder = client.createFolder(parentFolder==null?null:RoambiClientUtil.getContentItem(parentFolder, client), title);
 
-        if(permissionIds != null && newFolder != null) {
-            RoambiClientUtil.addPermission(newFolder, permissionIds, client);
+        try {
+            ContentItem newFolder = client.createFolder(parentFolder==null?null:RoambiClientUtil.getContentItem(parentFolder, client), title);
+
+            if(permissionIds != null && newFolder != null) {
+                RoambiClientUtil.addPermission(newFolder, permissionIds, client);
+            }
+        } catch(ApiException e) {
+            if (ignoreFailure) {
+                logger.warn(e.getLocalizedMessage());
+            } else {
+                throw e;
+            }
         }
     }
 

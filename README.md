@@ -183,6 +183,15 @@ Usage: <main class> [options] [command] [command options]
               --folder
              folder to be deleted
 
+    sync_dir      Set sync of folder(s) in Roambi Repository
+      Usage: sync_dir [options]
+        Options:
+        *     --folders
+             folders to be updated
+          -s, --sync
+             Enable sync for the folder
+             Default: false
+
     update      Upload and update a file in the Roambi Repository
       Usage: update [options]
         Options:
@@ -203,16 +212,7 @@ Usage: <main class> [options] [command] [command options]
               --title
              title of the new file
 
-    version     Usage: version [options]
-
-    sync_dir    Set sync of folder(s) in Roambi Repository
-      Usage: sync_dir [options]
-        Options:
-        *     --folders
-             folders to be updated
-          -s, --sync
-             Enable sync for the folder
-             Default: false
+    version      Usage: version [options]
 
 ```
 

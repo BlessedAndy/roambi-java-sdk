@@ -33,6 +33,7 @@ import com.mellmo.roambi.api.model.User;
  */
 public class RoambiClientUtil {
 
+    private static final String RFS = "rfs";
     private static Logger log = Logger.getLogger(RoambiClientUtil.class);
 
     //cheesy check to see if we are a UID or a path
@@ -67,7 +68,7 @@ public class RoambiClientUtil {
         }
         else {
             try {
-                ContentResult result = getContentAndFolderByPath("rfs", item, client);
+                ContentResult result = getContentAndFolderByPath(RFS, item, client);
                 if (result.getContent() != null) {
                     return result.getContent();
                 } else {
@@ -87,6 +88,22 @@ public class RoambiClientUtil {
     private static ContentItem getContentItemFromPath(String path, RoambiApiClient client) {
         String uid="", name="";
         return new ContentItem(uid, name);
+    }
+
+    public static List<ContentItem> getPortalContents(String item, RoambiApiClient client) throws IOException, PortalContentNotFoundException, ApiException {
+        String folderUid;
+        if(isUIDValue(item)){
+           folderUid = item;
+        } else {
+            String destinationPath = item;
+            ContentResult result = getContentAndFolderByPath(RFS, destinationPath, client);
+            if (result.getContent() == null) {
+                return null;
+            }
+            folderUid = result.getContent().getUid();
+        }
+
+        return client.getPortalContents(RFS, folderUid);
     }
 
     private static ContentResult getContentAndFolderByPath(String portalUid, String destinationPath, RoambiApiClient client) throws PortalContentNotFoundException, IOException {
@@ -208,18 +225,26 @@ public class RoambiClientUtil {
     }
 
     public static void addPermission(ContentItem newItem, List<String> permissionIds, RoambiApiClient client) throws ApiException, IOException {
+        if (permissionIds.isEmpty()) {
+            log.info("No user or group specified. Permission not added.");
+            return;
+        }
         List<String> userIds = RoambiClientUtil.getUserIds(permissionIds, client);
         List<String> groupIds=null;
         if(!permissionIds.contains("all")) {
             groupIds= RoambiClientUtil.getGroupIds(permissionIds, client);
         }
 
+        if (userIds.isEmpty() && groupIds.isEmpty()) {
+            log.info("Specified user and group cannot be found. Permission not added.");
+            return;
+        }
         client.addPermission(newItem, groupIds, userIds, RoambiFilePermission.WRITE);
     }
 
     public static ContentItem findFile(String directory_uid, ContentItem fileItem, RoambiApiClient client) throws ApiException, IOException {
         ContentItem foundItem = null;
-        List<ContentItem> directoryListing = client.getPortalContents("rfs", directory_uid);
+        List<ContentItem> directoryListing = client.getPortalContents(RFS, directory_uid);
         for(ContentItem content:directoryListing) {
             if( content.getName().equals(fileItem.getName()) || content.getUid().equals(fileItem.getUid()) ) {
                 foundItem = content;
