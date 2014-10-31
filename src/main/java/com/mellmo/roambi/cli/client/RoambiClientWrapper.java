@@ -4,19 +4,18 @@
  */
 package com.mellmo.roambi.cli.client;
 
-import com.mellmo.roambi.api.RoambiApiApplication;
-import com.mellmo.roambi.api.RoambiApiClient;
-import com.mellmo.roambi.api.exceptions.ApiException;
-import com.mellmo.roambi.api.model.Account;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.List;
-import java.util.Properties;
+import com.mellmo.roambi.api.RoambiApiApplication;
+import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.exceptions.ApiException;
+import com.mellmo.roambi.api.model.Account;
 
 /**
  * Created with IntelliJ IDEA.
@@ -77,7 +76,12 @@ public class RoambiClientWrapper implements RoambiApiApplication {
             		logger.error(e.getMessage());
             	}
             }
-            
+
+            String insecure = props.getProperty("insecure");
+            if ((insecure != null) && Boolean.parseBoolean(insecure)) {
+                roambiApiClient.disableSSLVerification();
+            }
+
             if(account == null)
             {
                 List<Account> accounts = roambiApiClient.getUserAccounts();
