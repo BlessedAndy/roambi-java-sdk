@@ -4,22 +4,25 @@
  */
 package com.mellmo.roambi.cli.client;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.exceptions.PortalContentNotFoundException;
-import com.mellmo.roambi.api.model.*;
-import javassist.expr.NewArray;
-import org.apache.log4j.Logger;
-import org.apache.commons.codec.binary.Base64;
-
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.List;
-import java.util.ArrayList;
-
-import static org.junit.Assert.assertNull;
+import com.mellmo.roambi.api.model.ContentItem;
+import com.mellmo.roambi.api.model.ContentResult;
+import com.mellmo.roambi.api.model.Group;
+import com.mellmo.roambi.api.model.PagedList;
+import com.mellmo.roambi.api.model.RoambiFilePermission;
+import com.mellmo.roambi.api.model.Role;
+import com.mellmo.roambi.api.model.User;
 
 /**
  * Created with IntelliJ IDEA.
@@ -39,7 +42,24 @@ public class RoambiClientUtil {
         }
         return true;
 
-    }
+	}
+	
+	public static boolean isValidUUID(final String uuid) {
+		if (uuid == null) {
+			return false;
+		}
+		try {
+			return UUID.fromString(uuid) != null;
+		} catch (IllegalArgumentException ex) {
+			log.trace("UUID is invalid");
+		}
+		return false;
+	}
+	
+	public static String getContentItemUid(final String item, final RoambiApiClient client) throws ApiException, IOException {
+		return StringUtils.startsWith(item, "/") ? client.getItemInfoByPath(item).getUid() : item; 
+	}
+	
 
     public static ContentItem getContentItem(String item, RoambiApiClient client) throws Exception {
         if(isUIDValue(item)){

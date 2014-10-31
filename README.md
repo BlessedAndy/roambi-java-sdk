@@ -38,7 +38,7 @@ The client supports the following functions:
 To start, in Command Prompt/Terminal, you can type:
 
 ```
-java -jar roambi-api-cli.jar 
+java -jar roambi-api-cli.jar
 ```
 
 That will give a list of commands available and brief descriptions.
@@ -203,7 +203,17 @@ Usage: <main class> [options] [command] [command options]
               --title
              title of the new file
 
-    version      Usage: version [options]
+    version     Usage: version [options]
+
+    sync_dir    Set sync of folder(s) in Roambi Repository
+      Usage: sync_dir [options]
+        Options:
+        *     --folders
+             folders to be updated
+          -s, --sync
+             Enable sync for the folder
+             Default: false
+
 ```
 
 ### Notes
