@@ -35,10 +35,23 @@ The client supports the following functions:
 * update - update an existing source file in the library
 * refresh - create a new document (RBI) with a template and source file
 
+To start, in Command Prompt/Terminal, you can type:
 
-### Account Properties
+```
+java -jar roambi-api-cli.jar 
+```
 
-You need to contain your account and client info in a (plain text) .properties file.  Here is an example of the contents:
+That will give a list of commands available and brief descriptions.
+
+### Configuration
+
+First thing you want to do is to create a properties file with the account information
+
+```
+java -jar roambi-api-cli.jar configure
+```
+
+Answer the prompts, and it will generate a roambi-api-cli.properties file in the current directory. Here is an example of the contents:
 
 ```
 server.url=https://api.roambi.com
@@ -49,9 +62,38 @@ username=someone@yourdomain.com
 password=mypassword
 ```
 
-You pass this to the jar using the -props option:
+If you want the properties with different name or different location, you can use the --props option:
 
-`java -jar roambi-api-cli.jar -props=path/to/my/file.properties`
+```
+java -jar roambi-api-cli.jar -props=path/to/my/file.properties [command]
+```
+
+### Performing multiple commands using script file.
+To perform multiple command, you can invoke RoambiScript multiple times, like:
+
+```
+java -jar roambi-api-cli.jar upload --file A.xlsx --folder XXXX
+java -jar roambi-api-cli.jar upload --file B.xlsx --folder XXXX
+```
+
+Alternatively, you can create a text file that contains all the commands in a text file, for example,  
+```
+my_file.roambiscript
+```
+with the following content:
+
+```
+# this is a comment
+upload --file "this is a file with spaces.xlsx" --folder XXXX
+upload --file B.xlsx --folder XXXX
+```
+and run:
+
+```
+java -jar roambi-api-cli.jar --file my_file.roambiscript
+```
+
+
 
 ### Command line help
 
