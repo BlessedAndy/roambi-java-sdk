@@ -8,6 +8,10 @@
     <artifactId>roambi-api-java-cli</artifactId>
     <version>0.0.3-SNAPSHOT</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.mellmo.roambi.api</groupId>
