@@ -1,8 +1,6 @@
 roambi-script
 =============
 
-[![Build Status](https://api.travis-ci.org/Roambi/roambi-script.png)](https://api.travis-ci.org/Roambi/roambi-script)
-
 RoambiScript is a command line interface to the Roambi API Java Client.  It allows the user another way to invoke api calls to Roambi from the terminal.
 
 Requirements:
