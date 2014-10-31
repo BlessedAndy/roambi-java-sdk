@@ -6,6 +6,8 @@ package com.mellmo.roambi.cli.commands;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -21,6 +23,7 @@ import com.mellmo.roambi.cli.client.RoambiClientUtil;
  */
 @Parameters(separators = "=", commandDescription = "List folder content")
 public class ListCommand extends CommandBase {
+    private static Logger logger = Logger.getLogger(ListCommand.class);
     private final String commandName = "ls";
 
     @Parameter(names = "--folder", description="parent folder", required=true)
@@ -37,9 +40,9 @@ public class ListCommand extends CommandBase {
         client.currentUser();
         List<ContentItem> items = RoambiClientUtil.getPortalContents(parentFolder, client);
 
-        System.out.println("Listing: " + parentFolder);
+        logger.info("Listing: " + parentFolder);
         for (ContentItem item: items) {
-            System.out.println(
+            logger.info(
                     String.format( "%1$s\t%2$11s\t%3$s", item.getUid(), item.getType(), item.getName()));
 
         }
