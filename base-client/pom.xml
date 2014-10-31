@@ -6,6 +6,10 @@
     <version>0.0.3-SNAPSHOT</version>
     <name>Base API Client</name>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
