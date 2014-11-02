@@ -8,7 +8,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -45,23 +44,18 @@ public class RoambiClientUtil {
 
 	}
 	
-	public static boolean isValidUUID(final String uuid) {
-		if (uuid == null) {
-			return false;
-		}
-		try {
-			return UUID.fromString(uuid) != null;
-		} catch (IllegalArgumentException ex) {
-			log.trace("UUID is invalid");
-		}
-		return false;
-	}
-	
 	public static String getContentItemUid(final String item, final RoambiApiClient client) throws ApiException, IOException {
 		return StringUtils.startsWith(item, "/") ? client.getItemInfoByPath(item).getUid() : item; 
 	}
 	
-
+	public static String getContentItemUid(final UidValidator validator, final RoambiApiClient client) throws ApiException, IOException {
+		return validator.isValid() ? validator.getId() : client.getItemInfoByPath(validator.getId()).getUid();
+	}
+	
+	public static ContentItem getContentItem(final String uid) {
+		return new ContentItem(uid, "");
+	}
+	
     public static ContentItem getContentItem(String item, RoambiApiClient client) throws Exception {
         if(isUIDValue(item)){
             return new ContentItem(item, "");
@@ -83,11 +77,6 @@ public class RoambiClientUtil {
                 throw e;
             }
         }
-    }
-
-    private static ContentItem getContentItemFromPath(String path, RoambiApiClient client) {
-        String uid="", name="";
-        return new ContentItem(uid, name);
     }
 
     public static List<ContentItem> getPortalContents(String item, RoambiApiClient client) throws IOException, PortalContentNotFoundException, ApiException {
