@@ -4,15 +4,16 @@
  */
 package com.mellmo.roambi.cli.commands;
 
+import java.io.File;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
-import org.apache.log4j.Logger;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -51,6 +52,10 @@ public class CreateSourceCommand extends CommandBase {
         logger.info("executing: " + commandName);
         logger.info("file: " + newFile);
         logger.info("folder: " + parentFolder);
+        if (title == null) {
+            String []parts = newFile.split(File.separator);
+            title = parts[parts.length-1];
+        }
         logger.info("title: " + title);
         if(permissionIds !=null) {
             logger.info("permission:" + permissionIds.toString());
