@@ -27,10 +27,18 @@ public abstract class UidValidator {
 	public UidValidator(final String id) {
 		this.id = id;
 		this.isBlank = isBlank(id);
-		if (!this.isBlank)	this.isPath = isPath(id);
-		if (!this.isPath)	this.isUid = isUid(id);
-		if (!this.isUid)	this.isUuid = isUuid(id);
-		if (!this.isUuid)	this.isEmail = isEmail(id);
+		if (!this.isBlank) {
+			this.isPath = isPath(id);
+			if (!this.isPath) {
+				this.isUid = isUid(id);
+				if (!this.isUid) {
+					this.isUuid = isUuid(id);
+					if (!this.isUuid) {
+						this.isEmail = isEmail(id);
+					}
+				}
+			}
+		}
 	}
 	
 	public static boolean isBlank(final String id) {
