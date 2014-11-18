@@ -55,7 +55,7 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS, params[0]);
 		}
 	},
-	FILE_INFO {
+	FILES_UID_INFO {
         public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
         	return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, params[0], INFO);
         }
@@ -145,8 +145,7 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, PORTALS,  params[0], "contents");
 		}
 	},
-	@Deprecated
-	PUBLISH_FILE {
+	@Deprecated PUBLISH_FILE {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, ANALYTICS);
 		}
@@ -166,7 +165,7 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, "token");
 		}
 	},
-	UPDATE_FILE {
+	@Deprecated UPDATE_FILE {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, PORTALS, params[0], FILES, params[1]);
 		}
