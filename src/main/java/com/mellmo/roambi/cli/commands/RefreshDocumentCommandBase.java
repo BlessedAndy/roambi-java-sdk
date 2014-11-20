@@ -12,12 +12,14 @@ import static com.mellmo.roambi.cli.client.RoambiClientUtil.findFile;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.getContentItem;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.getContentItemUid;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.ContentItem;
 import com.mellmo.roambi.api.model.User;
@@ -57,16 +59,20 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 		final User user = client.currentUser();
 		final String folderUid = getContentItemUid(expectAnyFolder(destinationFolder), client);
 		publish(client, folderUid);
-		if (isAccountFolder(folderUid) || isPersonalFolderOwner(folderUid, user)) {
-			final ContentItem newItem = findFile(folderUid, new ContentItem("", title), client);
-			if (permissionIds != null && newItem != null) {
-				addPermission(newItem, permissionIds, client);
-			}
-		}
+		if (isAccountFolder(folderUid)) 					addPermissions(client, folderUid);
+		else if (isPersonalFolderOwner(folderUid, user))	addPermissions(client, user.getUid());
 		else {
 			LOG.warn("Destination folder is only accessible by personal folder's owner. Skip verify and add permission publihed file.");
 		}
 	}
+	
+	private void addPermissions(final RoambiApiClient client, final String folderUid) throws ApiException, IOException {
+		final ContentItem newItem = findFile(folderUid, new ContentItem("", title), client);
+		if (permissionIds != null && newItem != null) {
+			addPermission(newItem, permissionIds, client);
+		}
+	}
+	
 	private void publish(final RoambiApiClient client, final String folderUid) throws Exception {
 		ApiJob job = clientExecute(client, getContentItem(template, client), getContentItem(folderUid));
 		int tries = 0;
