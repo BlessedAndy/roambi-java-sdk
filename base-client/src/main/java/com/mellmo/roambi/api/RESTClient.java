@@ -4,8 +4,6 @@
  */
 package com.mellmo.roambi.api;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -43,6 +41,8 @@ import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.http.FilePartDescriptor;
 import com.mellmo.roambi.api.model.IBaseModel;
 import com.mellmo.roambi.api.utils.JsonUtils;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * 
@@ -153,7 +153,7 @@ public abstract class RESTClient {
 	}
 	
 	protected static Part toPart(final NameValuePair param) {
-		return new StringPart(param.getName(), param.getValue());
+		return new StringPart(param.getName(), param.getValue(), UTF_8);
 	}
 	
 	protected static Part toPart(final String name, final File file) throws FileNotFoundException {
@@ -162,7 +162,7 @@ public abstract class RESTClient {
 	}
 
 	protected static Part toPart(final String name, final NameValuePair... params) {
-		return new StringPart(name, JsonUtils.createJsonFromParameters(params));
+		return new StringPart(name, JsonUtils.createJsonFromParameters(params), UTF_8);
 	}
 	
 	private static PostMethod buildPostMethod(final String accessToken, final String url) {
@@ -225,7 +225,7 @@ public abstract class RESTClient {
 				part = new FilePart(param.getKey(), descriptor.getFileName(), descriptor.getFile());
 			}
 			else {
-				part = new StringPart(param.getKey(), param.getValue().toString());
+				part = new StringPart(param.getKey(), param.getValue().toString(), UTF_8);
 			}
 			parts.add(part);
 		}
