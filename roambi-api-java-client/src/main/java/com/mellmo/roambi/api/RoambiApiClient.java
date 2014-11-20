@@ -350,18 +350,6 @@ public class RoambiApiClient extends BaseApiClient {
     	return list;
     }
     
-	public ContentItem updateFileName(ContentItem targetFile, String portalUid, String title) throws ApiException, IOException {
-		final String url = buildUrl(RoambiApiResource.UPDATE_FILE, required(PORTAL_UID, portalUid), required(TARGET_FILE, targetFile));
-        final PostMethod method = buildPostMethod(url, TEXT_JSON, required(TITLE, title));
-        return invokeMethodGetContentItemApiDetailsResponse(method, false);
-	}
-
-    public ContentItem updateFileDirectory(ContentItem targetFile, String portalUid, ContentItem directory) throws ApiException, IOException {
-    	final String url = buildUrl(RoambiApiResource.UPDATE_FILE, required(PORTAL_UID, portalUid), required(TARGET_FILE, targetFile));
-        final PostMethod method = buildPostMethod(url, TEXT_JSON, required(DIRECTORY_UID, directory));
-        return invokeMethodGetContentItemApiDetailsResponse(method, false);
-    }
-
     public ContentItem updateFileData(final ContentItem targetFile, final InputStream inputStream, final String contentType) throws ApiException, IOException {
     	final String url = buildUrl(RoambiApiResource.UPDATE_FILE_DATA, required(TARGET_FILE, targetFile));
         checkArgument(inputStream != null, "inputStream cannot be null.");
@@ -418,15 +406,33 @@ public class RoambiApiClient extends BaseApiClient {
     }
 
 	public ContentItem getFileInfo(String fileUid) throws ApiException, IOException {
-		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FILE_INFO, required(FILE_UID, fileUid))), false);
+		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FILES_UID_INFO, required(FILE_UID, fileUid))), false);
 	}
 	
-    public ContentItem setFileInfo(String fileUid, ContentItem item) throws ApiException, IOException {
-        final String url = buildUrl(RoambiApiResource.FILE_INFO, required(FILE_UID, fileUid));
+    @Deprecated public ContentItem setFileInfo(String fileUid, ContentItem item) throws ApiException, IOException {
+        final String url = buildUrl(RoambiApiResource.FILES_UID_INFO, required(FILE_UID, fileUid));
         final PostMethod method = buildPostMethod(url, TEXT_JSON, required(TITLE, item != null ? item.getName() : null));
         return invokeMethodGetContentItemApiDetailsResponse(method, false);
     }
+    
+    public ContentItem setFileInfo(final String fileUid, final String directoryUid, final String title) throws ApiException, IOException {
+    	final String url = buildUrl(RoambiApiResource.FILES_UID_INFO, required(FILE_UID, fileUid));
+    	final HttpMethodBase method = buildPutMethod(url, required(DIRECTORY_UID, directoryUid), required(TITLE, title));
+        return invokeMethodGetContentItemApiDetailsResponse(method, false);
+    }
+    
+	public ContentItem setFileTitle(final String fileUid, final String title) throws ApiException, IOException {
+		final String url = buildUrl(RoambiApiResource.FILES_UID_INFO, required(FILE_UID, fileUid));
+        final PostMethod method = buildPostMethod(url, TEXT_JSON, required(TITLE, title));
+        return invokeMethodGetContentItemApiDetailsResponse(method, false);
+	}
 
+    public ContentItem moveFile(final String fileUid, final String directoryUid) throws ApiException, IOException {
+    	final String url = buildUrl(RoambiApiResource.FILES_UID_INFO, required(FILE_UID, fileUid));
+        final PostMethod method = buildPostMethod(url, TEXT_JSON, required(DIRECTORY_UID, directoryUid));
+        return invokeMethodGetContentItemApiDetailsResponse(method, false);
+    }
+    
     public InputStream downloadFile(final String fileUid) throws ApiException, IOException {
 		final HttpMethodBase method = buildGetMethod(buildUrl(RoambiApiResource.DOWNLOAD_FILE, required(FILE_UID, fileUid)));
 		try {
