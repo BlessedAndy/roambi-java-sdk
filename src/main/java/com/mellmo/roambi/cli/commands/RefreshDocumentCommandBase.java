@@ -62,7 +62,7 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 		if (isAccountFolder(folderUid)) 					addPermissions(client, folderUid);
 		else if (isPersonalFolderOwner(folderUid, user))	addPermissions(client, user.getUid());
 		else {
-			LOG.warn("Destination folder is only accessible by personal folder's owner. Skip verify and add permission publihed file.");
+			LOG.warn("Destination folder is only accessible by personal folder's owner. Skip verify and add permission published file.");
 		}
 	}
 	
