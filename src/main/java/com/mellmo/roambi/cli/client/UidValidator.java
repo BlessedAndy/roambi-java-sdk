@@ -46,7 +46,7 @@ public abstract class UidValidator {
 	}
 	
 	public static boolean isEmail(final String id) {
-		return id != null && id.matches(EMAIL_PATTERN);
+		return id != null && id.toLowerCase().matches(EMAIL_PATTERN);
 	}
 	
 	public static boolean isPath(final String id) {
