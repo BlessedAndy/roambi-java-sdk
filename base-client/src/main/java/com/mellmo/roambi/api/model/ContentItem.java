@@ -22,7 +22,7 @@ public class ContentItem implements IBaseModel {
 	
 	protected static final String UPDATED_AT = "updated_at";
 	protected static final String FILE_TYPE = "file_type";
-	protected static final String ANALYTICS = "ANALYTICS";
+	public static final String ANALYTICS = "ANALYTICS";
 	protected static final String FOLDER = "FOLDER";
 	protected static final Logger LOG = Logger.getLogger(ContentItem.class);
 	private String uid;
@@ -51,7 +51,7 @@ public class ContentItem implements IBaseModel {
 	}
 	
 	protected ContentItem(final String type, final JsonObject jsonObject) {
-		this.name = jsonObject.get("title").getAsString();
+		this.name = jsonObject.get(TITLE).getAsString();
 		this.uid = jsonObject.get("uid").getAsString();
 		if (jsonObject.get("permissions") != null) {
 			final JsonObject obj = jsonObject.get("permissions").getAsJsonObject();
@@ -125,7 +125,7 @@ public class ContentItem implements IBaseModel {
 	public static ContentItem fromApiListItem(JsonObject jsonObject) {
 		final String type = jsonObject.get(FILE_TYPE).getAsString();
 		if (ANALYTICS.equals(type))		return new AnalyticsFile(jsonObject);
-		else if (FOLDER.equals(type))	return new Folder(jsonObject);
+		else if (FOLDER.equals(type))	return Folder.getFolder(jsonObject);
 		else 							return new ContentItem(type, jsonObject);
 	}
 	

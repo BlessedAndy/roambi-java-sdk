@@ -4,6 +4,11 @@
  */
 package com.mellmo.roambi.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.mellmo.roambi.api.utils.UidUtils.isEmail;
+import static com.mellmo.roambi.api.utils.UidUtils.isPath;
+import static com.mellmo.roambi.api.utils.UidUtils.isUid;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +31,7 @@ import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.google.gson.JsonObject;
@@ -47,9 +53,10 @@ import com.mellmo.roambi.api.requests.AddPermissionsRequest;
 import com.mellmo.roambi.api.requests.RemovePermissionsRequest;
 import com.mellmo.roambi.api.utils.ResponseUtils;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 public class RoambiApiClient extends BaseApiClient {
+	protected static final String ID = "id";
+	protected static final String PATH = "path";
+	protected static final String UPLOAD = "upload";
 	protected static final String PORTAL_UID = "portalUid";
 	protected static final String FOLDERUID = "folderUid";
 	protected static final String FILE_UID = "fileUid";
@@ -268,7 +275,7 @@ public class RoambiApiClient extends BaseApiClient {
 	}
 	
 	public ContentItem createFile(ContentItem parentFolder, String title, File sourceFile) throws ApiException, IOException {
-		final PostMethod method = buildPostMethod(buildUrl(RoambiApiResource.CREATE_FILE), toPart(required(TITLE, title)), toPart(required(FOLDER_UID, parentFolder)), toPart("upload", sourceFile));
+		final PostMethod method = buildPostMethod(buildUrl(RoambiApiResource.CREATE_FILE), toPart(required(TITLE, title)), toPart(required(FOLDER_UID, parentFolder)), toPart(UPLOAD, sourceFile));
 		return invokeMethodGetContentItemApiDetailsResponse(method, false);
 	}
 	
@@ -310,16 +317,16 @@ public class RoambiApiClient extends BaseApiClient {
 	
 	public Folder setFolderSync(final String folderUid, final boolean sync) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.FOLDERS_UID, required(FOLDERUID, folderUid));
-		final HttpMethodBase method = buildPutMethod(url, required("sync", sync));
+		final HttpMethodBase method = buildPutMethod(url, required(Folder.SYNC, sync));
 		return (Folder) invokeMethodGetContentItemApiDetailsResponse(method);
 	}
 	
     public ContentItem addPermission(ContentItem contentItem, Group group, RoambiFilePermission permission) throws ApiException, IOException {
-    	return addPermission(contentItem, asList("group", group), null, permission);
+    	return addPermission(contentItem, asList(Group.GROUP, group), null, permission);
     }
     
     public ContentItem addPermission(ContentItem contentItem, User user, RoambiFilePermission permission) throws ApiException, IOException {
-    	return addPermission(contentItem, null, asList("user", user), permission);
+    	return addPermission(contentItem, null, asList(User.USER, user), permission);
     }
 
     public ContentItem addPermission(ContentItem contentItem, List<String> groups, List<String> users, RoambiFilePermission permission) throws ApiException, IOException {
@@ -330,11 +337,11 @@ public class RoambiApiClient extends BaseApiClient {
     }
     
 	public ContentItem removePermission(ContentItem contentItem, User user) throws ApiException, IOException {
-		return removePermission(contentItem, null, asList("user", user));
+		return removePermission(contentItem, null, asList(User.USER, user));
 	}
 
     public ContentItem removePermission(ContentItem contentItem, Group group) throws ApiException, IOException {
-        return removePermission(contentItem, asList("group", group), null);
+        return removePermission(contentItem, asList(Group.GROUP, group), null);
     }
 
     public ContentItem removePermission(ContentItem contentItem, List<String> groups, List<String> users) throws ApiException, IOException {
@@ -359,7 +366,7 @@ public class RoambiApiClient extends BaseApiClient {
 
     public ContentItem updateFileData(ContentItem targetFile, File sourceFile) throws ApiException, IOException {
     	final String url = buildUrl(RoambiApiResource.UPDATE_FILE_DATA, required(TARGET_FILE, targetFile));
-        final PostMethod methd = buildPostMethod(url, toPart("upload", sourceFile));
+        final PostMethod methd = buildPostMethod(url, toPart(UPLOAD, sourceFile));
         return invokeMethodGetContentItemApiDetailsResponse(methd, false);
     }
 
@@ -390,15 +397,12 @@ public class RoambiApiClient extends BaseApiClient {
 	}
 	
     public ContentItem getFolderInfo(final String folderUid) throws ApiException, IOException {
-		return invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FOLDER_INFO, required(FOLDERUID, folderUid))), true);
+    	return isUid(folderUid) ? invokeMethodGetContentItemApiDetailsResponse(buildGetMethod(buildUrl(RoambiApiResource.FOLDER_INFO, required(FOLDERUID, folderUid))), true) : getItemInfo(folderUid);
 	}
     
-    public ContentItem getItemInfoById(final String id) throws ApiException, IOException {
-    	return getItemInfo("id", id);
-    }
-    
-    public ContentItem getItemInfoByPath(final String path) throws ApiException, IOException {
-    	return getItemInfo("path", path);
+    public ContentItem getItemInfo(final String id) throws ApiException, IOException {
+    	if (isPath(id))		return getItemInfo(PATH, id);
+		else 				return getItemInfo(ID, id);
     }
     
     private ContentItem getItemInfo(final String paramName, final String paramValue) throws ApiException, IOException {
@@ -465,11 +469,20 @@ public class RoambiApiClient extends BaseApiClient {
 		return apiResource.url(	baseServiceUrl, apiVersion, getAccountUid(),
 								CollectionUtils.collect(Arrays.asList(params),
 														new Transformer<NameValuePair, String>() {
-															@Override
-															public String transform(NameValuePair param) {
-																return param.getValue();
+															@Override public String transform(final NameValuePair param) {
+																return apiResource.isRfs ? toUid(param.getValue()) : param.getValue();
 															}
 														}).toArray(new String[params.length]));
+	}
+	
+	private String toUid(final String value) {
+		try {
+			if (isPath(value))			return getItemInfo(PATH, value).getUid();
+			else if (isEmail(value))	return getItemInfo(ID, value).getUid();
+		} catch (Exception e) {
+			LOG.error("Failed to find content item with " + value);
+		}
+		return value;
 	}
 
 	protected String getAuthorizationCodeFromServer(String authUrl, String username, String password) throws ApiException {

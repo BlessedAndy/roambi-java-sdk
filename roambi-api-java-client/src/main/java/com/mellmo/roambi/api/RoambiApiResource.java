@@ -14,12 +14,12 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, "authorize");
 		}
 	},
-	ADD_PERMISSION {
+	ADD_PERMISSION(true) {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, params[0], PERMISSIONS);
 		}
 	},
-	ADD_FOLDER_PERMISSION {
+	ADD_FOLDER_PERMISSION(true) {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String... params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS, params[0], PERMISSIONS);
 		}
@@ -29,8 +29,7 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS);
 		}
 	},
-	@Deprecated
-	CREATE_ROOT_FOLDER {
+	@Deprecated CREATE_ROOT_FOLDER {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String... params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS);
 		}
@@ -45,27 +44,27 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES);
 		}
 	},
-	DELETE_FILE {
+	DELETE_FILE(true) {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiFilesUrl(baseUrl, apiVersion, accountUid, params[0]);
 		}
 	},
-	FOLDERS_UID {
+	FOLDERS_UID(true) {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS, params[0]);
 		}
 	},
-	FILES_UID_INFO {
+	FILES_UID_INFO(true) {
         public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
         	return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, params[0], INFO);
         }
     },
-    DOWNLOAD_FILE {
+    DOWNLOAD_FILE(true) {
         public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
         	return buildApiFilesUrl(baseUrl, apiVersion, accountUid, params[0]);
         }
     },
-	FOLDER_INFO {
+	FOLDER_INFO(true) {
 		public String url(final String baseUrl, final int apiVersion, final String accountUid, final String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS, params[0], INFO);
 		}
@@ -150,12 +149,12 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, ANALYTICS);
 		}
 	},
-	REMOVE_PERMISSION {
+	REMOVE_PERMISSION(true) {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, params[0], PERMISSIONS, REMOVE);
 		}
 	},
-	REMOVE_FOLDER_PERMISSION {
+	REMOVE_FOLDER_PERMISSION(true) {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FOLDERS, params[0], PERMISSIONS, REMOVE);
 		}
@@ -170,7 +169,7 @@ public enum RoambiApiResource {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, PORTALS, params[0], FILES, params[1]);
 		}
 	},
-	UPDATE_FILE_DATA {
+	UPDATE_FILE_DATA(true) {
 		public String url(String baseUrl, int apiVersion, String accountUid, String...params) {
 			return buildApiUrl(baseUrl, apiVersion, ACCOUNTS, accountUid, FILES, params[0], "data");
 		}
@@ -195,7 +194,13 @@ public enum RoambiApiResource {
 	protected static final String ACCOUNTS = "accounts";
 
 	private static final Logger LOG = Logger.getLogger(RoambiApiResource.class);
-
+	public final boolean isRfs;
+	private RoambiApiResource() {
+		this(false);
+	}
+	private RoambiApiResource(final boolean isRfs) {
+		this.isRfs = isRfs;
+	}
 	public abstract String url(String baseUrl, int apiVersion, String accountUid, String...params);
 	
 	private static String normalizeServiceUrl(String serviceUrl) {

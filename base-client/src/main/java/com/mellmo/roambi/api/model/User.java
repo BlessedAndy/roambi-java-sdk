@@ -7,6 +7,8 @@ package com.mellmo.roambi.api.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.utils.JsonUtils;
@@ -44,7 +46,7 @@ public class User implements IBaseModel {
 	}
 	
 	public String getName() {
-		return this.name;
+		return StringUtils.isBlank(name) ? String.format("%s %s", givenName, familyName).trim() : name;
 	}
 
 	public String getGivenName() {

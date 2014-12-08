@@ -120,6 +120,10 @@ public abstract class BaseApiClient extends RESTClient {
 	public void setAccessToken(final String accessToken) {
 		this.accessToken = accessToken;
 	}
+	
+	public void setRefreshToken(final String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
 
 	public abstract List<Account> getUserAccounts() throws ApiException, IOException;
 	
@@ -128,6 +132,10 @@ public abstract class BaseApiClient extends RESTClient {
 	protected String getAccessToken() throws ApiException {
 		if (!isAuthenticated()) authenticate();
 		return this.accessToken;
+	}
+	
+	protected String getRefreshToken() {
+		return this.refreshToken;
 	}
 	
 	protected String getAccountUid() {
