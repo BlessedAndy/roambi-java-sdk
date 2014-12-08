@@ -4,14 +4,15 @@
  */
 package com.mellmo.roambi.cli.commands;
 
-import com.beust.jcommander.Parameter;
-import com.beust.jcommander.Parameters;
-
-import com.mellmo.roambi.api.RoambiApiClient;
-import com.mellmo.roambi.cli.client.RoambiClientUtil;
-import org.apache.log4j.Logger;
+import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
 
 import java.io.File;
+
+import org.apache.log4j.Logger;
+
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.Parameters;
+import com.mellmo.roambi.api.RoambiApiClient;
 
 /**
  * Created with IntelliJ IDEA.
@@ -42,9 +43,9 @@ public class UpdateSourceCommand extends CommandBase {
         logger.info("file: " + newFile);
         logger.info("remoteUid: " + remoteUid);
 
-        File sourceFile = new File(newFile);
+        final File sourceFile = new File(newFile);
         client.currentUser();
-        client.updateFileData(RoambiClientUtil.getContentItem(remoteUid, client), sourceFile);
+        client.updateFileData(toContentItem(remoteUid), sourceFile);
     }
 }
 

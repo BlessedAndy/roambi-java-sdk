@@ -41,22 +41,17 @@ public class RoambiClientUtil {
             return false;
         }
         return true;
-
 	}
 	
 	public static String getContentItemUid(final String item, final RoambiApiClient client) throws ApiException, IOException {
-		return StringUtils.startsWith(item, "/") ? client.getItemInfoByPath(item).getUid() : item; 
+		return StringUtils.contains(item, "/") ? client.getItemInfo(item).getUid() : item; 
 	}
 	
-	public static String getContentItemUid(final UidValidator validator, final RoambiApiClient client) throws ApiException, IOException {
-		return validator.isValid() ? validator.getId() : client.getItemInfoByPath(validator.getId()).getUid();
+	public static ContentItem toContentItem(final String uid) {
+		return uid == null ? null : new ContentItem(uid, "");
 	}
 	
-	public static ContentItem getContentItem(final String uid) {
-		return new ContentItem(uid, "");
-	}
-	
-    public static ContentItem getContentItem(String item, RoambiApiClient client) throws Exception {
+	@Deprecated public static ContentItem getContentItem(String item, RoambiApiClient client) throws Exception {
         if(isUIDValue(item)){
             return new ContentItem(item, "");
         }
@@ -79,7 +74,7 @@ public class RoambiClientUtil {
         }
     }
 
-    public static List<ContentItem> getPortalContents(String item, RoambiApiClient client) throws IOException, PortalContentNotFoundException, ApiException {
+    @Deprecated public static List<ContentItem> getPortalContents(String item, RoambiApiClient client) throws IOException, PortalContentNotFoundException, ApiException {
         String folderUid;
         if(isUIDValue(item)){
            folderUid = item;
@@ -95,7 +90,7 @@ public class RoambiClientUtil {
         return client.getPortalContents(RFS, folderUid);
     }
 
-    private static ContentResult getContentAndFolderByPath(String portalUid, String destinationPath, RoambiApiClient client) throws PortalContentNotFoundException, IOException {
+    @Deprecated private static ContentResult getContentAndFolderByPath(String portalUid, String destinationPath, RoambiApiClient client) throws PortalContentNotFoundException, IOException {
         if(destinationPath.startsWith("/")) {
             destinationPath = destinationPath.replaceFirst("/", "");
         }

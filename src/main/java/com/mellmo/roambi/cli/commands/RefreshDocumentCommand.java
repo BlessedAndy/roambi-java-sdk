@@ -4,7 +4,7 @@
  */
 package com.mellmo.roambi.cli.commands;
 
-import static com.mellmo.roambi.cli.client.RoambiClientUtil.getContentItem;
+import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -36,6 +36,6 @@ public class RefreshDocumentCommand extends RefreshDocumentCommandBase {
 	}
 
 	@Override protected ApiJob clientExecute(final RoambiApiClient client, final ContentItem template, final ContentItem folder) throws Exception {
-		return client.createAnalyticsFile(getContentItem(sourceFile, client), template, folder, title, overwrite);
+		return client.createAnalyticsFile(toContentItem(sourceFile), template, folder, title, overwrite);
 	}
 }

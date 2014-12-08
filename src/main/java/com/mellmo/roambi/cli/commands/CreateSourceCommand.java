@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.cli.commands;
 
+import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
+
 import java.io.File;
 import java.util.List;
 
@@ -63,7 +65,7 @@ public class CreateSourceCommand extends CommandBase {
 
         File sourceFile = new File(newFile);
         client.currentUser();
-        ContentItem newItem = client.createFile(RoambiClientUtil.getContentItem(parentFolder, client), title, sourceFile);
+        ContentItem newItem = client.createFile(toContentItem(parentFolder), title, sourceFile);
         if(permissionIds != null && newItem != null) {
             RoambiClientUtil.addPermission(newItem, permissionIds,client);
         }

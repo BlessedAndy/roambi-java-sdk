@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.cli.commands;
 
+import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
+
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -57,8 +59,7 @@ public class CreateFolderCommand extends CommandBase {
         client.currentUser();
 
         try {
-            ContentItem newFolder = client.createFolder(parentFolder==null?null:RoambiClientUtil.getContentItem(parentFolder, client), title);
-
+        	final ContentItem newFolder = client.createFolder(toContentItem(parentFolder), title);
             if(permissionIds != null && newFolder != null) {
                 RoambiClientUtil.addPermission(newFolder, permissionIds, client);
             }

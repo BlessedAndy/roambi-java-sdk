@@ -4,14 +4,11 @@
  */
 package com.mellmo.roambi.cli.commands;
 
+import org.apache.log4j.Logger;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
-import com.mellmo.roambi.api.model.ContentItem;
-import com.mellmo.roambi.cli.client.RoambiClientUtil;
-import org.apache.log4j.Logger;
-
-import java.io.File;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,7 +35,6 @@ public class DeleteFileCommand extends CommandBase {
         logger.info("executing: " + commandName);
         logger.info("file: " + file);
         client.currentUser();
-        ContentItem item = RoambiClientUtil.getContentItem(file, client);
-        client.deleteFile(item.getUid());
+        client.deleteFile(file);
     }
 }
