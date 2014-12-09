@@ -9,11 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 import com.mellmo.roambi.api.model.User;
 
 /**
- * 
+ * This class is no longer used since the api client and the server accept folder path, user email as the id of the content.
  * @author charles
  *
  */
-public abstract class FolderUidValidator extends UidValidator {
+@Deprecated public abstract class FolderUidValidator extends UidValidator {
 	
 	public FolderUidValidator(final String id) {
 		super(id);

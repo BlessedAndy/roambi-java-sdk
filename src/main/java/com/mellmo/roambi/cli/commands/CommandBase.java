@@ -6,8 +6,6 @@ package com.mellmo.roambi.cli.commands;
 
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
-import com.mellmo.roambi.api.model.ContentItem;
-import com.mellmo.roambi.cli.client.RoambiClientWrapper;
 
 /**
  * Created with IntelliJ IDEA.

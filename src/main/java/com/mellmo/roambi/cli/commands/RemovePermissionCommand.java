@@ -4,17 +4,15 @@
  */
 package com.mellmo.roambi.cli.commands;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
-import com.mellmo.roambi.api.model.ContentItem;
-import com.mellmo.roambi.api.model.Group;
-import com.mellmo.roambi.api.model.User;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
-import org.apache.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -61,7 +59,7 @@ public class RemovePermissionCommand extends CommandBase {
         client.currentUser();
         if(groupIds.size() > 0 || userIds.size() > 0){
             client.removePermission(
-                    RoambiClientUtil.getContentItem(remoteUid, client),
+            		client.getItemInfo(remoteUid),
                     groupIds.size()>0?RoambiClientUtil.getGroupIds(groupIds, client):groupIds,
                     userIds.size()>0?RoambiClientUtil.getUserIds(userIds, client):userIds);
         } else {

@@ -4,13 +4,9 @@
  */
 package com.mellmo.roambi.cli.commands;
 
-import static com.mellmo.roambi.cli.client.FolderUidValidator.expectAnyFolder;
-import static com.mellmo.roambi.cli.client.FolderUidValidator.isAccountFolder;
-import static com.mellmo.roambi.cli.client.FolderUidValidator.isPersonalFolderOwner;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.addPermission;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.findFile;
-import static com.mellmo.roambi.cli.client.RoambiClientUtil.getContentItem;
-import static com.mellmo.roambi.cli.client.RoambiClientUtil.getContentItemUid;
+import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,7 +18,6 @@ import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.ContentItem;
-import com.mellmo.roambi.api.model.User;
 
 /**
  * 
@@ -56,14 +51,9 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 			LOG.info("permission:" + permissionIds.toString());
 		}
 		
-		final User user = client.currentUser();
-		final String folderUid = getContentItemUid(expectAnyFolder(destinationFolder), client);
-		publish(client, folderUid);
-		if (isAccountFolder(folderUid)) 					addPermissions(client, folderUid);
-		else if (isPersonalFolderOwner(folderUid, user))	addPermissions(client, user.getUid());
-		else {
-			LOG.warn("Destination folder is only accessible by personal folder's owner. Skip verify and add permission published file.");
-		}
+		client.currentUser();
+		publish(client, destinationFolder);
+		addPermissions(client, destinationFolder);
 	}
 	
 	private void addPermissions(final RoambiApiClient client, final String folderUid) throws ApiException, IOException {
@@ -74,7 +64,7 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 	}
 	
 	private void publish(final RoambiApiClient client, final String folderUid) throws Exception {
-		ApiJob job = clientExecute(client, getContentItem(template, client), getContentItem(folderUid));
+		ApiJob job = clientExecute(client, toContentItem(template), toContentItem(folderUid));
 		int tries = 0;
 		while(job.getStatus()==ApiJob.JobStatus.PROCESSING) {
 			Thread.sleep(job.getRetryAfter() * 1000);

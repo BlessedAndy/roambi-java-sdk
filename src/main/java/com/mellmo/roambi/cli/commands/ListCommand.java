@@ -12,7 +12,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.ContentItem;
-import com.mellmo.roambi.cli.client.RoambiClientUtil;
 
 /**
  * Created with IntelliJ IDEA.
@@ -38,7 +37,7 @@ public class ListCommand extends CommandBase {
     public void execute(RoambiApiClient client) throws Exception {
 
         client.currentUser();
-        List<ContentItem> items = RoambiClientUtil.getPortalContents(parentFolder, client);
+        List<ContentItem> items = client.getPortalContents("rfs", parentFolder);
 
         logger.info("Listing: " + parentFolder);
         for (ContentItem item: items) {
