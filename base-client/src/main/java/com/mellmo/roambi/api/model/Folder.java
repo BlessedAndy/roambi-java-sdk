@@ -17,6 +17,7 @@ import com.mellmo.roambi.api.utils.UidUtils;
  */
 public class Folder extends ContentItem {
 	
+	public static final String MY_DOCUMENTS = "My Documents";
 	public static final String SYNC = "sync";
 	private boolean synced = false;
 	
@@ -59,6 +60,6 @@ public class Folder extends ContentItem {
 	}
 	
 	private static boolean isCurrentUserPersonalFolder(final JsonObject json) {
-		return StringUtils.equals("My Documents", json.get(TITLE).getAsString()) && UidUtils.isUuid(json.get(UID).getAsString());
+		return StringUtils.equals(MY_DOCUMENTS, json.get(TITLE).getAsString()) && UidUtils.isUuid(json.get(UID).getAsString());
 	}
 }
