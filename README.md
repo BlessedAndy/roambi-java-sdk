@@ -128,11 +128,20 @@ Usage: <main class> [options] [command] [command options]
               --file
              file to be deleted
 
+    ls      List folder content
+      Usage: ls [options]
+        Options:
+        *     --folder
+             parent folder
+
     mkdir      Create a folder in the Roambi Repository
       Usage: mkdir [options]
         Options:
               --folder
              parent folder
+              --ignoreFailure
+             Do not report error when failed.
+             Default: false
               --permission
              set permissions for folder
               --title
