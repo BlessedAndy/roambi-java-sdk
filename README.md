@@ -23,8 +23,8 @@ Requirements:
 * The RoambiScript jar file will now be available at `target/roambi-api-cli.jar`
 
 Alternatively, you may download compiled versions here:
-* (Latest Stable) https://s3.amazonaws.com/roambi-api-downloads/roambi-script/latest/roambi-api-cli.jar
-* (Latest Beta) https://s3.amazonaws.com/roambi-api-downloads/roambi-script/beta/roambi-api-cli.jar
+* (Latest Stable) https://s3.amazonaws.com/roambi-api-downloads/api/roambi-script/latest/roambi-api-cli.jar
+* (Latest Beta) https://s3.amazonaws.com/roambi-api-downloads/api/roambi-script/beta/roambi-api-cli.jar
 
 ## Usage
 
