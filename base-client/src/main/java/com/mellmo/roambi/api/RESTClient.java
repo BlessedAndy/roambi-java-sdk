@@ -158,7 +158,16 @@ public abstract class RESTClient {
 	
 	protected static Part toPart(final String name, final File file) throws FileNotFoundException {
 		checkArgument((file != null && file.exists()), name + " does not exist.");
-		return new FilePart(name, file, contentTypeForFile(file), null);
+
+        String contentType = contentTypeForFile(file);
+        String charset = null;
+
+        FilePart filePart = new FilePart(name, file);
+        // do this outside the constructor
+        // the setter accepts null, but the constructor defaults to DEFAULT_CHARSET when we pass null
+        filePart.setContentType(contentType);
+        filePart.setCharSet(charset);
+        return filePart;
 	}
 
 	protected static Part toPart(final String name, final NameValuePair... params) {
