@@ -4,6 +4,7 @@
  */
 package com.mellmo.roambi.api.model;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -112,39 +113,64 @@ public class Group implements IBaseModel {
         return userArray;
     }
 
-	public static List<Group> fromApiResponseToGroups(final String json) {
-        
-        List<Group> groups = new ArrayList<Group>();
+    public static List<Group> fromApiResponseToGroups(final InputStream stream) {
+
+        JsonObject responseProps = ResponseUtils.responseToObject(stream);
+
+        return fromJsonObjectToGroups(responseProps);
+	}
+
+    @Deprecated
+    public static List<Group> fromApiResponseToGroups(final String json) {
+
         JsonObject responseProps = ResponseUtils.responseToObject(json);
+
+        return fromJsonObjectToGroups(responseProps);
+    }
+
+    private static List<Group> fromJsonObjectToGroups(JsonObject responseProps) {
+        List<Group> groups = new ArrayList<Group>();
+
         JsonArray array = responseProps.getAsJsonArray("groups");
         for (int i=0; i<array.size(); i++) {
             JsonObject props = array.get(i).getAsJsonObject();
-            
+
             Group g = buildGroup(props);
             groups.add(g);
         }
-        
+
         return groups;
-	}
-	
+    }
+
+    @Deprecated
 	public static Group fromApiResponseToGroup(final String json) {
 		final JsonObject responseJson = ResponseUtils.responseToObject(json);
-		final JsonObject groupJson = responseJson.getAsJsonObject(GROUP);
-		final Group group = buildGroup(groupJson);
-		if (groupJson.has(USERS) && groupJson.get(USERS).isJsonArray()) {
-			final JsonArray usersJson = groupJson.getAsJsonArray(USERS);
-			if (group.users == null) {
-				group.users = new ArrayList<User>();
-			}
-			for (JsonElement userJson:usersJson) {
-				final User user = User.getUser((JsonObject) userJson);
-				group.users.add(user);
-			}
-		}
-		return group;
+        return fromJsonObjectToGroup(responseJson);
 	}
-	
-	private static Group buildGroup(JsonObject props)
+
+    public static Group fromApiResponseToGroup(final InputStream stream) {
+        final JsonObject responseJson = ResponseUtils.responseToObject(stream);
+        return fromJsonObjectToGroup(responseJson);
+    }
+
+
+    private static Group fromJsonObjectToGroup(JsonObject responseJson) {
+        final JsonObject groupJson = responseJson.getAsJsonObject(GROUP);
+        final Group group = buildGroup(groupJson);
+        if (groupJson.has(USERS) && groupJson.get(USERS).isJsonArray()) {
+            final JsonArray usersJson = groupJson.getAsJsonArray(USERS);
+            if (group.users == null) {
+                group.users = new ArrayList<User>();
+            }
+            for (JsonElement userJson:usersJson) {
+                final User user = User.getUser((JsonObject) userJson);
+                group.users.add(user);
+            }
+        }
+        return group;
+    }
+
+    private static Group buildGroup(JsonObject props)
     {
         final Group group = new Group();
         group.uid = props.get(UID).getAsString();

@@ -4,6 +4,7 @@
  */
 package com.mellmo.roambi.api.model;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,24 +36,34 @@ public class Portal {
 		this.title = title;
 	}
 
+    @Deprecated
 	public static List<Portal> fromApiListResponse(String json) {
 		JsonObject props = ResponseUtils.responseToObject(json);
-		List<Portal> portals = new ArrayList<Portal>();
-
-		JsonArray array = props.getAsJsonArray("portals");
-		for (int i=0; i<array.size(); i++) {
-			JsonObject portalProps = array.get(i).getAsJsonObject();
-
-			Portal p = new Portal();
-			p.title = portalProps.get("title").getAsString();
-			p.uid = portalProps.get("uid").getAsString();
-
-			portals.add(p);
-		}
-		return portals;
+        return fromJsonObject(props);
 	}
 
-	public static Portal fromApiDetailsResponse(String json) {
+    public static List<Portal> fromApiListResponse(InputStream stream) {
+        JsonObject props = ResponseUtils.responseToObject(stream);
+        return fromJsonObject(props);
+    }
+
+    private static List<Portal> fromJsonObject(JsonObject props) {
+        List<Portal> portals = new ArrayList<Portal>();
+
+        JsonArray array = props.getAsJsonArray("portals");
+        for (int i=0; i<array.size(); i++) {
+            JsonObject portalProps = array.get(i).getAsJsonObject();
+
+            Portal p = new Portal();
+            p.title = portalProps.get("title").getAsString();
+            p.uid = portalProps.get("uid").getAsString();
+
+            portals.add(p);
+        }
+        return portals;
+    }
+
+    public static Portal fromApiDetailsResponse(String json) {
 		JsonObject props = ResponseUtils.responseToObject(json);
 
 		Portal portal = new Portal();

@@ -4,6 +4,7 @@
  */
 package com.mellmo.roambi.api.model;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,14 +35,21 @@ public class Account {
     public void setTitle(String title) {
         this.title = title;
     }
-	
+
+    @Deprecated
     public static List<Account> fromUserResourcesResponse(String json) 
     {
         JsonObject responseProps = ResponseUtils.responseToObject(json).get("resources").getAsJsonObject();
         return buildAccounts(responseProps);
     }
 
-    public static List<Account> fromListResponse(String json) 
+    public static List<Account> fromUserResourcesResponse(InputStream stream)
+    {
+        JsonObject responseProps = ResponseUtils.responseToObject(stream).get("resources").getAsJsonObject();
+        return buildAccounts(responseProps);
+    }
+
+    public static List<Account> fromListResponse(String json)
     {
         JsonObject responseProps = ResponseUtils.responseToObject(json);
         return buildAccounts(responseProps);
