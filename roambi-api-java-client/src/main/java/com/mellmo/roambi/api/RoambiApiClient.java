@@ -4,11 +4,6 @@
  */
 package com.mellmo.roambi.api;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.mellmo.roambi.api.utils.UidUtils.isEmail;
-import static com.mellmo.roambi.api.utils.UidUtils.isPath;
-import static com.mellmo.roambi.api.utils.UidUtils.isUid;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,7 +26,6 @@ import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.utils.URLEncodedUtils;
 
 import com.google.gson.JsonObject;
@@ -52,6 +46,9 @@ import com.mellmo.roambi.api.model.UserAccount;
 import com.mellmo.roambi.api.requests.AddPermissionsRequest;
 import com.mellmo.roambi.api.requests.RemovePermissionsRequest;
 import com.mellmo.roambi.api.utils.ResponseUtils;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.mellmo.roambi.api.utils.UidUtils.*;
 
 public class RoambiApiClient extends BaseApiClient {
 	protected static final String ID = "id";
@@ -93,7 +90,7 @@ public class RoambiApiClient extends BaseApiClient {
 		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
 		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
-				return Account.fromUserResourcesResponse(this.method.getResponseBodyAsString());
+				return Account.fromUserResourcesResponse(this.method.getResponseBodyAsStream());
 			}
 		};
 		return (List<Account>) handler.invokeApi();
@@ -103,7 +100,7 @@ public class RoambiApiClient extends BaseApiClient {
 		String url = RoambiApiResource.USER_RESOURCES.url(baseServiceUrl, apiVersion, null);
 		return (User) new ApiInvocationHandler(buildGetMethod(url)) {
 			public Object onSuccess() throws HttpException, IOException {
-				return User.fromUserResourcesResponse(this.method.getResponseBodyAsString());
+				return User.fromUserResourcesResponse(this.method.getResponseBodyAsStream());
 			}
 		}.invokeApi();
 	}
@@ -112,7 +109,7 @@ public class RoambiApiClient extends BaseApiClient {
     	final String url = buildUrl(RoambiApiResource.LIST_GROUPS);
         ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(url)) {
             public Object onSuccess() throws HttpException, IOException {
-                return Group.fromApiResponseToGroups(this.method.getResponseBodyAsString());
+                return Group.fromApiResponseToGroups(this.method.getResponseBodyAsStream());
             }
         };
         return (List<Group>) handler.invokeApi();
@@ -162,7 +159,7 @@ public class RoambiApiClient extends BaseApiClient {
 	private Group invokeMethodGetGroupResponse(final HttpMethodBase method) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
-				return Group.fromApiResponseToGroup(this.method.getResponseBodyAsString());
+				return Group.fromApiResponseToGroup(this.method.getResponseBodyAsStream());
 			}
 		};
 		return (Group) handler.invokeApi();
@@ -219,7 +216,7 @@ public class RoambiApiClient extends BaseApiClient {
 	protected User invokeMethodGetUserResponse(final HttpMethodBase method) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
-				return User.fromApiResponseToUser(this.method.getResponseBodyAsString());
+				return User.fromApiResponseToUser(this.method.getResponseBodyAsStream());
 			}
 		};
 		return (User) handler.invokeApi();
@@ -232,7 +229,7 @@ public class RoambiApiClient extends BaseApiClient {
 	private PagedList<User> getUsers(final HttpMethodBase method) throws ApiException, IOException {
 		ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
-				return User.fromApiListResponse(this.method.getResponseBodyAsString());
+				return User.fromApiListResponse(this.method.getResponseBodyAsStream());
 			}
 		};
 		return (PagedList<User>) handler.invokeApi();
@@ -246,7 +243,7 @@ public class RoambiApiClient extends BaseApiClient {
 	public List<Portal> getPortals() throws ApiException, IOException {
 		ApiInvocationHandler handler = new ApiInvocationHandler(buildGetMethod(buildUrl(RoambiApiResource.LIST_PORTALS))) {
 			public Object onSuccess() throws HttpException, IOException {
-				return Portal.fromApiListResponse(this.method.getResponseBodyAsString());
+				return Portal.fromApiListResponse(this.method.getResponseBodyAsStream());
 			}
 		};
 		return (List<Portal>) handler.invokeApi();
@@ -262,8 +259,10 @@ public class RoambiApiClient extends BaseApiClient {
 		final GetMethod method = buildGetMethod(url, removeNull(optional(FOLDER_UID, folderUid), optional("file_types", fileTypes)));
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
-				LOG.debug("Contents JSON: " + this.method.getResponseBodyAsString());
-				return ContentItem.fromApiListResponse(this.method.getResponseBodyAsString());
+                if (LOG.isDebugEnabled()) {
+				    LOG.debug("Contents JSON: " + this.method.getResponseBodyAsString());
+                }
+				return ContentItem.fromApiListResponse(this.method.getResponseBodyAsStream());
 			}
 		};
 		return (List<ContentItem>) handler.invokeApi();
@@ -563,7 +562,7 @@ public class RoambiApiClient extends BaseApiClient {
 				final String responseBody = method.getResponseBodyAsString();
 				LOG.debug(responseBody);
 			}
-			final JsonObject responseObject = ResponseUtils.responseToObject(method.getResponseBodyAsString());
+			final JsonObject responseObject = ResponseUtils.responseToObject(method.getResponseBodyAsStream());
 			refreshToken = responseObject.get(REFRESH_TOKEN).getAsString();
 			final String token = responseObject.get(ACCESS_TOKEN).getAsString();
 			return token;
@@ -579,10 +578,10 @@ public class RoambiApiClient extends BaseApiClient {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
 				if (isFolder) {
-					return ContentItem.fromApiFolderDetailsResponse(this.method.getResponseBodyAsString());
+					return ContentItem.fromApiFolderDetailsResponse(this.method.getResponseBodyAsStream());
 				}
 				else {
-					return ContentItem.fromApiFileDetailsResponse(this.method.getResponseBodyAsString());
+					return ContentItem.fromApiFileDetailsResponse(this.method.getResponseBodyAsStream());
 				}
 			}
 		};

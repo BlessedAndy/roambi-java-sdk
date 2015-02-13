@@ -4,6 +4,7 @@
  */
 package com.mellmo.roambi.api.model;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -96,27 +97,48 @@ public class ContentItem implements IBaseModel {
         this.permissions = permissions;
     }
 
+    @Deprecated
     public static List<ContentItem> fromApiListResponse(String json) {
-		List<ContentItem> contents = new ArrayList<ContentItem>();
 		JsonObject props = ResponseUtils.responseToObject(json);
-		JsonArray array = props.getAsJsonArray("portal_contents");
-		for (int i=0; i<array.size(); i++) {
-			contents.add(fromApiListItem(array.get(i).getAsJsonObject()));
-		}
-		return contents;
+        return fromJsonObject(props);
 	}
-	
-	public static ContentItem fromApiFolderDetailsResponse(final String json) {
+
+    public static List<ContentItem> fromApiListResponse(InputStream stream) {
+        JsonObject props = ResponseUtils.responseToObject(stream);
+        return fromJsonObject(props);
+    }
+    private static List<ContentItem> fromJsonObject(JsonObject props) {
+        List<ContentItem> contents = new ArrayList<ContentItem>();
+        JsonArray array = props.getAsJsonArray("portal_contents");
+        for (int i=0; i<array.size(); i++) {
+            contents.add(fromApiListItem(array.get(i).getAsJsonObject()));
+        }
+        return contents;
+    }
+
+    public static ContentItem fromApiFolderDetailsResponse(final InputStream stream) {
+        final JsonObject props = ResponseUtils.responseToObject(stream);
+        return fromApiListItem(props.get("folder").getAsJsonObject());
+    }
+
+    @Deprecated
+    public static ContentItem fromApiFolderDetailsResponse(final String json) {
 		final JsonObject props = ResponseUtils.responseToObject(json);
 		return fromApiListItem(props.get("folder").getAsJsonObject());
 	}
 	
-	public static ContentItem fromApiFileDetailsResponse(String json) {
-		final JsonObject props = ResponseUtils.responseToObject(json);
+	public static ContentItem fromApiFileDetailsResponse(InputStream stream) {
+		final JsonObject props = ResponseUtils.responseToObject(stream);
 		return fromApiListItem(props.get("file").getAsJsonObject());
 	}
-	
-	public static ContentItem fromApiItemDetailsResponse(final String json) {
+
+    @Deprecated
+    public static ContentItem fromApiFileDetailsResponse(String json) {
+        final JsonObject props = ResponseUtils.responseToObject(json);
+        return fromApiListItem(props.get("file").getAsJsonObject());
+    }
+
+    public static ContentItem fromApiItemDetailsResponse(final String json) {
 		final JsonObject props = ResponseUtils.responseToObject(json);
 		final String memberName = props.has("file") ? "file" : "folder";
 		return fromApiListItem(props.get(memberName).getAsJsonObject());

@@ -4,6 +4,7 @@
  */
 package com.mellmo.roambi.api.model;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -76,11 +77,17 @@ public class User implements IBaseModel {
 	public UserAccount getUserAccount() {
 		return this.userAccount;
 	}
-	
+
+    @Deprecated
 	public static User fromUserResourcesResponse(String json) {
 		JsonObject responseProps = ResponseUtils.responseToObject(json).get("resources").getAsJsonObject();
 		return getUser(responseProps);
 	}
+
+    public static User fromUserResourcesResponse(InputStream stream) {
+        JsonObject responseProps = ResponseUtils.responseToObject(stream).get("resources").getAsJsonObject();
+        return getUser(responseProps);
+    }
 
     public JsonObject toJSON() {
         JsonObject resultJson = new JsonObject();
@@ -101,14 +108,21 @@ public class User implements IBaseModel {
 
         return resultJson;
     }
-	
+
+    @Deprecated
 	public static User fromApiResponseToUser(final String json) {
 		final JsonObject userJson = ResponseUtils.responseToObject(json).get(USER).getAsJsonObject();
 		final User user = getUser(userJson);
 		return user;
 	}
 
-	public static User getUser(final JsonObject json) {
+    public static User fromApiResponseToUser(final InputStream stream) {
+        final JsonObject userJson = ResponseUtils.responseToObject(stream).get(USER).getAsJsonObject();
+        final User user = getUser(userJson);
+        return user;
+    }
+
+    public static User getUser(final JsonObject json) {
 		final User user = new User();
 		user.uid = json.get(UID).getAsString();
 		user.familyName = json.get(FAMILY_NAME).getAsString();
@@ -119,25 +133,35 @@ public class User implements IBaseModel {
 		return user;
 	}
 
+    @Deprecated
 	public static PagedList<User> fromApiListResponse(String json) {
-		PagedList<User> list = new PagedList<User>();
-		List<User> users = new ArrayList<User>();
-
-		JsonObject props = ResponseUtils.responseToObject(json);
-		JsonArray array = props.getAsJsonArray("users");
-		for (int i=0; i<array.size(); i++) {
-			users.add(User.fromApiListResponse(array.get(i).getAsJsonObject()));
-		}
-		list.setResults(users);
-
-		if (props.has("list_data")) {
-			list.fromApiListResponse(props.get("list_data").getAsJsonObject());
-		}
-		
-		return list;
+        JsonObject props = ResponseUtils.responseToObject(json);
+        return fromJsonObject(props);
 	}
-	
-	private static User fromApiListResponse(JsonObject responseProps) {
+
+    public static PagedList<User> fromApiListResponse(InputStream stream) {
+        JsonObject props = ResponseUtils.responseToObject(stream);
+        return fromJsonObject(props);
+    }
+
+    private static PagedList<User> fromJsonObject(JsonObject props) {
+        PagedList<User> list = new PagedList<User>();
+        List<User> users = new ArrayList<User>();
+
+        JsonArray array = props.getAsJsonArray("users");
+        for (int i=0; i<array.size(); i++) {
+            users.add(User.fromApiListResponse(array.get(i).getAsJsonObject()));
+        }
+        list.setResults(users);
+
+        if (props.has("list_data")) {
+            list.fromApiListResponse(props.get("list_data").getAsJsonObject());
+        }
+
+        return list;
+    }
+
+    private static User fromApiListResponse(JsonObject responseProps) {
 		User user = new User();
 		
 		user.setUid(responseProps.get(UID).getAsString());
