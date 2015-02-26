@@ -280,30 +280,27 @@ public class RoambiApiClient extends BaseApiClient {
 	
 	public void deleteFile(final String fileUid) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.DELETE_FILE, required(FILE_UID, fileUid));
-		LOG.debug("fileUid: " + fileUid + " " + invokeMethodGetDeleteResourceResponse(url));
+        invokeMethodGetDeleteResourceResponse(url, "deleteFile");
 	}
 	
 	public void deleteFolder(final String folderUid) throws ApiException, IOException {
 		final String url = buildUrl(RoambiApiResource.FOLDERS_UID, required(FOLDERUID, folderUid));
-		LOG.debug("folderUid: " + folderUid + " " + invokeMethodGetDeleteResourceResponse(url));
+        invokeMethodGetDeleteResourceResponse(url, "deleteFolder");
 	}
-	
+
 	private void invokeMethodGetDeleteResourceResponse(final String url, final String func) throws ApiException, IOException {
-		final String result =  invokeMethodGetDeleteResourceResponse(url);
-		if (LOG.isDebugEnabled()) {
-			LOG.debug(func + ": " + result);
-		}
-	}
-	
-	private String invokeMethodGetDeleteResourceResponse(final String url) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(buildDeleteMethod(url)) {
 			@Override
 			public Object onSuccess() throws HttpException, IOException {
-				return this.method.getResponseBodyAsString();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug(func + ": " + this.method.getResponseBodyAsString());
+                }
+
+                return this.method.getResponseBodyAsStream();
 			}
 		};
-		final String result = (String) handler.invokeApi();
-		return result;
+		handler.invokeApi();
+		return;
 	}
 
 	public Folder enableFolderSync(final String folderUid) throws ApiException, IOException {
@@ -503,8 +500,7 @@ public class RoambiApiClient extends BaseApiClient {
                 int result = httpClient.executeMethod(authPost);
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Auth result: " + result);
-                    String responseBody = authPost.getResponseBodyAsString();
-                    LOG.debug(responseBody);
+                    LOG.debug(authPost.getResponseBodyAsString());
                 }
 
                 switch(result) {
@@ -559,8 +555,7 @@ public class RoambiApiClient extends BaseApiClient {
 				for (Header header : method.getResponseHeaders()) {
 					LOG.debug(header.getName() + " :: " + header.getValue());
 				}
-				final String responseBody = method.getResponseBodyAsString();
-				LOG.debug(responseBody);
+				LOG.debug(method.getResponseBodyAsString());
 			}
 			final JsonObject responseObject = ResponseUtils.responseToObject(method.getResponseBodyAsStream());
 			refreshToken = responseObject.get(REFRESH_TOKEN).getAsString();
@@ -591,7 +586,7 @@ public class RoambiApiClient extends BaseApiClient {
 	protected ContentItem invokeMethodGetContentItemApiDetailsResponse(final HttpMethodBase method) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
-				return ContentItem.fromApiItemDetailsResponse(this.method.getResponseBodyAsString());
+				return ContentItem.fromApiItemDetailsResponse(this.method.getResponseBodyAsStream());
 			}
 		};
 		return (ContentItem) handler.invokeApi();
