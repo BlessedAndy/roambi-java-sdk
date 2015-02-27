@@ -138,6 +138,13 @@ public class ContentItem implements IBaseModel {
         return fromApiListItem(props.get("file").getAsJsonObject());
     }
 
+    @Deprecated
+    public static ContentItem fromApiItemDetailsResponse(String json) {
+		final JsonObject props = ResponseUtils.responseToObject(json);
+		final String memberName = props.has("file") ? "file" : "folder";
+		return fromApiListItem(props.get(memberName).getAsJsonObject());
+	}
+
     public static ContentItem fromApiItemDetailsResponse(InputStream stream) {
 		final JsonObject props = ResponseUtils.responseToObject(stream);
 		final String memberName = props.has("file") ? "file" : "folder";
