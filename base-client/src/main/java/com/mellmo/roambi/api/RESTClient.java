@@ -59,19 +59,19 @@ public abstract class RESTClient {
 	protected static final String TEXT_JSON = "text/json";
 	protected static final String UTF_8 = "utf-8";
 	
-	public static void addAuthorizationHeader(final HttpMethodBase method, final String accessToken) {
-		method.addRequestHeader(AUTHORIZATION, BEARER + accessToken);
+	public static void setAuthorizationHeader(final HttpMethodBase method, final String accessToken) {
+		method.setRequestHeader(AUTHORIZATION, BEARER + accessToken);
 	}
 	
 	public static DeleteMethod buildDeleteMethod(final String accessToken, final String url) {
 		final DeleteMethod method = new DeleteMethod(url);
-		addAuthorizationHeader(method, accessToken);
+		setAuthorizationHeader(method, accessToken);
 		return method;
 	}
 	
 	public static GetMethod buildGetMethod(final String accessToken, final String url, final NameValuePair... params) {
 		final GetMethod method = new GetMethod(url);
-		addAuthorizationHeader(method, accessToken);
+        setAuthorizationHeader(method, accessToken);
 		if (params.length > 0) {
 			method.setQueryString(params);
 		}
@@ -84,7 +84,7 @@ public abstract class RESTClient {
 
 	public static PutMethod buildPutMethod(final String accessToken, final String url, final String contentType, final NameValuePair... params) {
 		final PutMethod method = new PutMethod(url);
-		addAuthorizationHeader(method, accessToken);
+        setAuthorizationHeader(method, accessToken);
 		final RequestEntity requestEntity = getStringRequestEntity(contentType, params);
 		method.setRequestEntity(requestEntity);
 		return method;
@@ -176,7 +176,7 @@ public abstract class RESTClient {
 	
 	private static PostMethod buildPostMethod(final String accessToken, final String url) {
 		final PostMethod method = new PostMethod(url);
-		addAuthorizationHeader(method, accessToken);
+        setAuthorizationHeader(method, accessToken);
 		return method;
 	}
 	
