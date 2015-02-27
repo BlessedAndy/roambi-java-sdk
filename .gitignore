@@ -12,6 +12,8 @@ roambi.log
 
 */.classpath
 */.project
+.project
 */.settings
+.settings
 */bin/
 */target
