@@ -102,6 +102,9 @@ Usage: <main class> [options] [command] [command options]
         --help
        Shows help
        Default: false
+       --keep-going
+       Keep going after an error.
+       Default: false
     -props, --props
        Property file location. If not specified, default to
        roambi-api-cli.properties
