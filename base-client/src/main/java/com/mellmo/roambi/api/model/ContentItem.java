@@ -138,8 +138,8 @@ public class ContentItem implements IBaseModel {
         return fromApiListItem(props.get("file").getAsJsonObject());
     }
 
-    public static ContentItem fromApiItemDetailsResponse(final String json) {
-		final JsonObject props = ResponseUtils.responseToObject(json);
+    public static ContentItem fromApiItemDetailsResponse(InputStream stream) {
+		final JsonObject props = ResponseUtils.responseToObject(stream);
 		final String memberName = props.has("file") ? "file" : "folder";
 		return fromApiListItem(props.get(memberName).getAsJsonObject());
 	}
