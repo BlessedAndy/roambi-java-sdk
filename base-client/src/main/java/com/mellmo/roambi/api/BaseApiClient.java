@@ -4,8 +4,6 @@
  */
 package com.mellmo.roambi.api;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -29,6 +27,8 @@ import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.Account;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.User;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public abstract class BaseApiClient extends RESTClient {
 	public static final String TITLE = "title";
@@ -246,6 +246,7 @@ public abstract class BaseApiClient extends RESTClient {
 		public abstract Object onSuccess() throws HttpException, IOException;
 		
 		public Object invokeApi() throws ApiException, IOException {
+            boolean neverRefreshedToken = true;
 			int tries = 0;
 			try {
 				do {
@@ -262,7 +263,16 @@ public abstract class BaseApiClient extends RESTClient {
 					} catch (IOException e) {
 						LOG.error(logError(tries, e));
 						if (tries > retries)	throw e;
-					}
+					} catch (ApiException e ) {
+                        if ("invalid_token".equals(e.getCode()) && neverRefreshedToken) {
+                            neverRefreshedToken = false;
+                            tries--; // don't count the last attempt
+                            refreshToken();
+                            setAuthorizationHeader(method, getAccessToken());
+                        } else {
+                            throw e;
+                        }
+                    }
 					try {
 						Thread.sleep(tries * 1000);	// TODO: might need to change how long thread sleeps
 					} catch (InterruptedException e) {
