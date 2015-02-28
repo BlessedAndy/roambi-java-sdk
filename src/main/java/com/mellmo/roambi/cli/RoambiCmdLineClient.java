@@ -13,6 +13,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 import com.beust.jcommander.Parameter;
@@ -42,6 +43,9 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     @Parameter(names = "--help", description = "Shows help", help = true)
     private boolean help;
 
+    @Parameter(names = "--verbose", description = "Verbose mode")
+    private boolean verbose;
+
     @Parameter(names = "--file", description = "Script File", converter = FileConverter.class)
     private File scriptFile;
 
@@ -52,6 +56,9 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
 
     @Override
     protected void doExecute(String cmd) throws Exception {
+        if (verbose) {
+            Logger.getRootLogger().setLevel(Level.DEBUG);
+        }
         if (cmd == null) {
             if (scriptFile != null) {
                 executeScriptFile();
