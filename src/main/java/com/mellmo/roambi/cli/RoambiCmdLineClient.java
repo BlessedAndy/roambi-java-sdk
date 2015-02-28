@@ -33,17 +33,23 @@ import com.mellmo.roambi.cli.client.RoambiCommandClient;
 @Parameters(separators = "=")
 public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiCommandClient.ClientConfiguration {
 
+    private static final Logger LOG = Logger.getLogger(RoambiCmdLineClient.class);
+
     private RoambiClientWrapper clientWrapper;
 
     //top-level options
     @Parameter (names={"-props", "--props"}, description = "Property file location. If not specified, default to roambi-api-cli.properties")
     private String propertiesFile = "roambi-api-cli.properties";
 
-    @Parameter(names = "--help", description = "Shows help", help = true)
+    @Parameter(names = {"--help"}, description = "Shows help", help = true)
     private boolean help;
 
-    @Parameter(names = "--file", description = "Script File", converter = FileConverter.class)
+    @Parameter(names = {"--file"}, description = "Script File", converter = FileConverter.class)
     private File scriptFile;
+
+    @Parameter(names = {"--continue-on-failure", "-C"}, description = "Continue the rest of the script file on failure.")
+    private boolean continueOnFailure;
+
 
     public RoambiCmdLineClient () {
         super();
@@ -83,8 +89,19 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
                 args.add(tokenizer.next());
             }
             if (! args.isEmpty()) {
-                RoambiCommandClient client = new RoambiCommandClient(this);
-                client.execute(args.toArray(new String[]{}));
+                try {
+                    RoambiCommandClient client = new RoambiCommandClient(this);
+                    client.execute(args.toArray(new String[]{}));
+                } catch(Exception e) {
+                    LOG.error("Failed when executing:");
+                    LOG.error(args.toString());
+                    if (continueOnFailure) {
+                        LOG.error("Failed", e);
+                    } else {
+                        // don't have to log because the caller is logging already.
+                        throw e;
+                    }
+                }
             }
         }
     }
@@ -108,9 +125,9 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
         try {
             RoambiCmdLineClient cmd = new RoambiCmdLineClient();
             cmd.execute(args);
-            Logger.getLogger(RoambiCmdLineClient.class).info("Finished.");
+            LOG.info("Finished.");
         } catch (Exception e) {
-            Logger.getLogger(RoambiCmdLineClient.class).error("Failed. " + e.getLocalizedMessage(), e);
+            LOG.error("Failed. " + e.getLocalizedMessage(), e);
             System.exit(1);
         }
     }
