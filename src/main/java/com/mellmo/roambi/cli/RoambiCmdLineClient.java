@@ -48,7 +48,8 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     private File scriptFile;
 
     @Parameter(names = {"--continue-on-failure", "-C"}, description = "Continue the rest of the script file on failure.")
-    private boolean keepGoing;
+    private boolean continueOnFailure;
+
 
     public RoambiCmdLineClient () {
         super();
@@ -94,7 +95,7 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
                 } catch(Exception e) {
                     LOG.error("Failed when executing:");
                     LOG.error(args.toString());
-                    if (keepGoing) {
+                    if (continueOnFailure) {
                         LOG.error("Failed", e);
                     } else {
                         // don't have to log because the caller is logging already.
