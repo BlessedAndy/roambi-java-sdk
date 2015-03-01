@@ -89,8 +89,13 @@ public abstract class RESTClient {
 		method.setRequestEntity(requestEntity);
 		return method;
 	}
-	
-	public static String contentTypeForFile(File file) {
+
+    /**
+     * Return the MIME Type based on the specific file name.
+     * @param file the file name
+     * @return the file's MIME Type
+     */
+	protected String contentTypeForFile(File file) {
 		if (file.getName().endsWith(".xls")) {
 			return "application/excel";
 		}
@@ -152,11 +157,11 @@ public abstract class RESTClient {
 		return value == null ? null : new NameValuePair(name, value);
 	}
 	
-	protected static Part toPart(final NameValuePair param) {
+	protected Part toPart(final NameValuePair param) {
 		return new StringPart(param.getName(), param.getValue(), UTF_8);
 	}
 	
-	protected static Part toPart(final String name, final File file) throws FileNotFoundException {
+	protected Part toPart(final String name, final File file) throws FileNotFoundException {
 		checkArgument((file != null && file.exists()), name + " does not exist.");
 
         String contentType = contentTypeForFile(file);
