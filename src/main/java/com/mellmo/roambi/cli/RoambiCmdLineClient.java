@@ -41,10 +41,10 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     @Parameter (names={"-props", "--props"}, description = "Property file location. If not specified, default to roambi-api-cli.properties")
     private String propertiesFile = "roambi-api-cli.properties";
 
-    @Parameter(names = {"--help"}, description = "Shows help", help = true)
+    @Parameter(names = {"--help", "-h"}, description = "Shows help", help = true)
     private boolean help;
 
-    @Parameter(names = {"--file"}, description = "Script File", converter = FileConverter.class)
+    @Parameter(names = {"--file", "-f"}, description = "Script File", converter = FileConverter.class)
     private File scriptFile;
 
     @Parameter(names = {"--continue-on-failure", "-C"}, description = "Continue the rest of the script file on failure.")
