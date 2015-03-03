@@ -51,9 +51,24 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     private boolean continueOnFailure;
 
 
+    private int successCount = 0;
+    private int totalCount = 0;
+
     public RoambiCmdLineClient () {
         super();
         setConfiguration(this);
+    }
+
+    public int getSuccessCount() {
+        return successCount;
+    }
+
+    public int getFailureCount() {
+        return totalCount - successCount;
+    }
+
+    public int getTotalCount() {
+        return totalCount;
     }
 
     @Override
@@ -64,7 +79,14 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
                 return;
             }
         }
-        super.doExecute(cmd);
+
+        try {
+            totalCount++;
+            super.doExecute(cmd);
+            successCount++;
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     private void executeScriptFile() throws Exception {
@@ -84,14 +106,17 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
 
             LineTokenizer tokenizer = new LineTokenizer(line);
 
-            ArrayList<String> args = new ArrayList<String>();
+            ArrayList<String> argList = new ArrayList<String>();
             while( tokenizer.hasNext()) {
-                args.add(tokenizer.next());
+                argList.add(tokenizer.next());
             }
-            if (! args.isEmpty()) {
+            if (! argList.isEmpty()) {
+                String [] args = argList.toArray(new String[]{});
                 try {
+                    totalCount++;
                     RoambiCommandClient client = new RoambiCommandClient(this);
-                    client.execute(args.toArray(new String[]{}));
+                    client.execute(args);
+                    successCount++;
                 } catch(Exception e) {
                     LOG.error("Failed when executing:");
                     LOG.error(args.toString());
@@ -116,19 +141,30 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
             if (getPropertiesFile() == null) {
                 throw new RuntimeException("Property file was not specified.");
             }
-            clientWrapper = new RoambiClientWrapper(propertiesFile);
+            File file = new File(getPropertiesFile());
+            if (! file.exists()) {
+                throw new RuntimeException(String.format("Property file '%1$s' does not exist.", getPropertiesFile()));
+            }
+            clientWrapper = new RoambiClientWrapper(getPropertiesFile());
         }
-        return clientWrapper.getClient();
+        RoambiApiClient client = clientWrapper.getClient();
+        if (client == null) {
+            throw new RuntimeException("Unable to create Roambi API client.");
+        }
+        return client;
     }
 
     public static void main (String[] args) {
+        int exitCode = 0;
+        RoambiCmdLineClient cmd = new RoambiCmdLineClient();
         try {
-            RoambiCmdLineClient cmd = new RoambiCmdLineClient();
             cmd.execute(args);
             LOG.info("Finished.");
         } catch (Exception e) {
             LOG.error("Failed. " + e.getLocalizedMessage(), e);
-            System.exit(1);
+            exitCode = 1;
         }
+        LOG.info(String.format("Run: %1$d. Failure: %2$d. ",cmd.getTotalCount(),  cmd.getFailureCount()));
+        System.exit(exitCode);
     }
 }
