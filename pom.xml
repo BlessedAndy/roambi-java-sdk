@@ -12,6 +12,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <scm>
+      <connection>scm:git:git@github.com:Roambi/roambi-script.git</connection>
+      <developerConnection>scm:git:git@github.com:Roambi/roambi-script.git</developerConnection>
+      <url>scm:git:git@github.com:Roambi/roambi-script.git</url>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>com.mellmo.roambi.api</groupId>
