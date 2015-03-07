@@ -97,9 +97,12 @@ By default, the RoambiScript library will display inline help:
 ```
 Usage: <main class> [options] [command] [command options]
   Options:
-        --file
+    --continue-on-failure, -C
+       Continue the rest of the script file on failure.
+       Default: false
+    --file, -f
        Script File
-        --help
+    --help, -h
        Shows help
        Default: false
     -props, --props

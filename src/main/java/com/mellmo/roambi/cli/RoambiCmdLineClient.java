@@ -34,24 +34,45 @@ import com.mellmo.roambi.cli.client.RoambiCommandClient;
 @Parameters(separators = "=")
 public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiCommandClient.ClientConfiguration {
 
+    private static final Logger LOG = Logger.getLogger(RoambiCmdLineClient.class);
+
     private RoambiClientWrapper clientWrapper;
 
     //top-level options
     @Parameter (names={"-props", "--props"}, description = "Property file location. If not specified, default to roambi-api-cli.properties")
     private String propertiesFile = "roambi-api-cli.properties";
 
-    @Parameter(names = "--help", description = "Shows help", help = true)
+    @Parameter(names = {"--help", "-h"}, description = "Shows help", help = true)
     private boolean help;
 
     @Parameter(names = "--verbose", description = "Verbose mode")
     private boolean verbose;
 
-    @Parameter(names = "--file", description = "Script File", converter = FileConverter.class)
+    @Parameter(names = {"--file", "-f"}, description = "Script File", converter = FileConverter.class)
     private File scriptFile;
+
+    @Parameter(names = {"--continue-on-failure", "-C"}, description = "Continue the rest of the script file on failure.")
+    private boolean continueOnFailure;
+
+
+    private int successCount = 0;
+    private int totalCount = 0;
 
     public RoambiCmdLineClient () {
         super();
         setConfiguration(this);
+    }
+
+    public int getSuccessCount() {
+        return successCount;
+    }
+
+    public int getFailureCount() {
+        return totalCount - successCount;
+    }
+
+    public int getTotalCount() {
+        return totalCount;
     }
 
     @Override
@@ -65,7 +86,14 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
                 return;
             }
         }
-        super.doExecute(cmd);
+
+        try {
+            totalCount++;
+            super.doExecute(cmd);
+            successCount++;
+        } catch (Exception e) {
+            throw e;
+        }
     }
 
     private void executeScriptFile() throws Exception {
@@ -85,13 +113,27 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
 
             LineTokenizer tokenizer = new LineTokenizer(line);
 
-            ArrayList<String> args = new ArrayList<String>();
+            ArrayList<String> argList = new ArrayList<String>();
             while( tokenizer.hasNext()) {
-                args.add(tokenizer.next());
+                argList.add(tokenizer.next());
             }
-            if (! args.isEmpty()) {
-                RoambiCommandClient client = new RoambiCommandClient(this);
-                client.execute(args.toArray(new String[]{}));
+            if (! argList.isEmpty()) {
+                String [] args = argList.toArray(new String[]{});
+                try {
+                    totalCount++;
+                    RoambiCommandClient client = new RoambiCommandClient(this);
+                    client.execute(args);
+                    successCount++;
+                } catch(Exception e) {
+                    LOG.error("Failed when executing:");
+                    LOG.error(args.toString());
+                    if (continueOnFailure) {
+                        LOG.error("Failed", e);
+                    } else {
+                        // don't have to log because the caller is logging already.
+                        throw e;
+                    }
+                }
             }
         }
     }
@@ -106,19 +148,30 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
             if (getPropertiesFile() == null) {
                 throw new RuntimeException("Property file was not specified.");
             }
-            clientWrapper = new RoambiClientWrapper(propertiesFile);
+            File file = new File(getPropertiesFile());
+            if (! file.exists()) {
+                throw new RuntimeException(String.format("Property file '%1$s' does not exist.", getPropertiesFile()));
+            }
+            clientWrapper = new RoambiClientWrapper(getPropertiesFile());
         }
-        return clientWrapper.getClient();
+        RoambiApiClient client = clientWrapper.getClient();
+        if (client == null) {
+            throw new RuntimeException("Unable to create Roambi API client.");
+        }
+        return client;
     }
 
     public static void main (String[] args) {
+        int exitCode = 0;
+        RoambiCmdLineClient cmd = new RoambiCmdLineClient();
         try {
-            RoambiCmdLineClient cmd = new RoambiCmdLineClient();
             cmd.execute(args);
-            Logger.getLogger(RoambiCmdLineClient.class).info("Finished.");
+            LOG.info("Finished.");
         } catch (Exception e) {
-            Logger.getLogger(RoambiCmdLineClient.class).error("Failed. " + e.getLocalizedMessage(), e);
-            System.exit(1);
+            LOG.error("Failed. " + e.getLocalizedMessage(), e);
+            exitCode = 1;
         }
+        LOG.info(String.format("Run: %1$d. Failure: %2$d. ",cmd.getTotalCount(),  cmd.getFailureCount()));
+        System.exit(exitCode);
     }
 }
