@@ -6,7 +6,6 @@ package com.mellmo.roambi.api.model;
 
 import java.io.InputStream;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mellmo.roambi.api.utils.ResponseUtils;

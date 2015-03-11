@@ -5,6 +5,7 @@
 package com.mellmo.roambi.api.model;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 import java.util.*;
@@ -24,7 +25,7 @@ public class Permissions {
     }
 
     private void fillMap(JsonArray array, Map<String,String> map) {
-        Iterator itr = array.iterator();
+        Iterator<JsonElement> itr = array.iterator();
         while(itr.hasNext()) {
             JsonObject obj = (JsonObject)itr.next();
             if(obj.has("everyone")) {

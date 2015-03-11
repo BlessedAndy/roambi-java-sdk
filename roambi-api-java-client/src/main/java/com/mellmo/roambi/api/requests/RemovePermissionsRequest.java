@@ -10,9 +10,6 @@ import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.mellmo.roambi.api.model.Group;
-import com.mellmo.roambi.api.model.User;
-
 public class RemovePermissionsRequest {
 
 	private List<String> users;
