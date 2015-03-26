@@ -36,6 +36,13 @@ public class ConfigurePropertiesCommand extends ConfigureCommand {
     @Override
     public void setPropertiesPath(String path) {
         propFile = path;
+
+        try {
+            initDestinationFile(propFile);
+        }
+        catch(IOException e) {
+            // ignore
+        }
     }
 
     @Override

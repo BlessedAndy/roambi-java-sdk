@@ -108,8 +108,10 @@ public class RoambiCommandClient {
                 //kludge
                 if(cb instanceof ConfigureCommand) {
                     ((ConfigureCommand)cb).setPropertiesPath(configuration.getPropertiesFile());
-                }              //
-                cb.execute(configuration.getClient());
+                    cb.execute(null);
+                } else {
+                    cb.execute(configuration.getClient());
+                }
                 return;
             }
         }
