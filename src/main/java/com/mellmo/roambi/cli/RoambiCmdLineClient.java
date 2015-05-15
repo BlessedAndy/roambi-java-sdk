@@ -79,6 +79,7 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     protected void doExecute(String cmd) throws Exception {
         if (verbose) {
             Logger.getRootLogger().setLevel(Level.DEBUG);
+            Logger.getLogger("org.apache.commons.httpclient").setLevel(Level.DEBUG);
         }
         if (cmd == null) {
             if (scriptFile != null) {
