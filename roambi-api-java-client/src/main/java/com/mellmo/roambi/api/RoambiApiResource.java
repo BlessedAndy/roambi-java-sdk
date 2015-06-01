@@ -4,7 +4,8 @@
  */
 package com.mellmo.roambi.api;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public enum RoambiApiResource {
@@ -193,7 +194,7 @@ public enum RoambiApiResource {
 	protected static final String FILES = "files";
 	protected static final String ACCOUNTS = "accounts";
 
-	private static final Logger LOG = Logger.getLogger(RoambiApiResource.class);
+	private static final Logger LOG = LoggerFactory.getLogger(RoambiApiResource.class);
 	public final boolean isRfs;
 	private RoambiApiResource() {
 		this(false);

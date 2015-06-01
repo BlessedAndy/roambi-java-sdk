@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
@@ -34,15 +36,14 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.apache.commons.httpclient.util.EncodingUtil;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.http.FilePartDescriptor;
 import com.mellmo.roambi.api.model.IBaseModel;
 import com.mellmo.roambi.api.utils.JsonUtils;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * 
@@ -55,7 +56,7 @@ public abstract class RESTClient {
 	public static final String FORM_URL_ENCODED = "application/x-www-form-urlencoded";
 	protected static final String AUTHORIZATION = "Authorization";
 	protected static final String BEARER = "Bearer ";
-	protected static final Logger LOG = Logger.getLogger(RESTClient.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(RESTClient.class);
 	protected static final String TEXT_JSON = "text/json";
 	protected static final String UTF_8 = "utf-8";
 	
