@@ -11,7 +11,8 @@ import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -25,7 +26,7 @@ import com.mellmo.roambi.api.model.ContentItem;
  *
  */
 public abstract class RefreshDocumentCommandBase extends CommandBase {
-	protected static final Logger LOG = Logger.getLogger(RefreshDocumentCommandBase.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(RefreshDocumentCommandBase.class);
 	
 	@Parameter(names="--template", description = "template rbi")
 	String template;

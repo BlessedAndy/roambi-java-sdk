@@ -8,12 +8,13 @@ import java.io.File;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mellmo.roambi.api.RoambiApiClient;
 
 public class ShowVersionCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(ShowVersionCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(ShowVersionCommand.class);
     private final String commandName = "version";
 
     @Override

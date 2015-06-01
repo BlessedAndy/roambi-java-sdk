@@ -4,17 +4,19 @@
  */
 package com.mellmo.roambi.cli.hidden.commands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
+import com.mellmo.roambi.api.model.User;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import com.mellmo.roambi.cli.commands.CommandBase;
-import com.mellmo.roambi.api.model.User;
-import org.apache.log4j.Logger;
 
 @Parameters(separators = "=", commandDescription = "Update a user")
 public class UserUpdateCommand extends CommandBase{
-    private static Logger logger = Logger.getLogger(UserUpdateCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(UserUpdateCommand.class);
     private final String commandName = "userupdate";
 
     @Parameter(names="--id", description="user id")

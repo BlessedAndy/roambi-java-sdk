@@ -7,7 +7,8 @@ package com.mellmo.roambi.cli.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -24,7 +25,7 @@ import com.mellmo.roambi.cli.client.RoambiClientUtil;
 
 @Parameters(separators="=", commandDescription="remove permissions to a file")
 public class RemovePermissionCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(RemovePermissionCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(RemovePermissionCommand.class);
     protected String name = "removePermission";
 
     @Parameter(names="--target", description="target file")

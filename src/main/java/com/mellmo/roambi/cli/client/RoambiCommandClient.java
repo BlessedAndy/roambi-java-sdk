@@ -10,8 +10,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.apache.log4j.Logger;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.JCommander;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -27,7 +28,7 @@ import com.mellmo.roambi.cli.commands.ShowVersionCommand;
  * To change this template use File | Settings | File Templates.
  */
 public class RoambiCommandClient {
-    private static final Logger logger = Logger.getLogger(RoambiCommandClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(RoambiCommandClient.class);
 
 
     //commands

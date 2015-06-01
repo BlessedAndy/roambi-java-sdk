@@ -4,7 +4,8 @@
  */
 package com.mellmo.roambi.cli.commands;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -19,7 +20,7 @@ import com.mellmo.roambi.api.RoambiApiClient;
  */
 @Parameters(separators = "=", commandDescription = "Delete a file in the Roambi Repository")
 public class DeleteFileCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(DeleteFileCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(DeleteFileCommand.class);
     private final String commandName = "delete";
 
     @Parameter(names="--file", description="file to be deleted")

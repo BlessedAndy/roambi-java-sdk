@@ -6,7 +6,8 @@ package com.mellmo.roambi.cli.commands;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -22,7 +23,7 @@ import com.mellmo.roambi.api.model.ContentItem;
  */
 @Parameters(separators = "=", commandDescription = "List folder content")
 public class ListCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(ListCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(ListCommand.class);
     private final String commandName = "ls";
 
     @Parameter(names = "--folder", description="parent folder", required=true)

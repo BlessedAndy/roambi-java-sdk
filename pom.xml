@@ -8,6 +8,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <logback.version>1.1.3</logback.version>
     </properties>
 
     <scm>
@@ -31,6 +32,16 @@
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
             <version>0.9.9-RC1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.12</version>
+        </dependency>
+        <dependency>
+        	<groupId>ch.qos.logback</groupId>
+        	<artifactId>logback-classic</artifactId>
+        	<version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>

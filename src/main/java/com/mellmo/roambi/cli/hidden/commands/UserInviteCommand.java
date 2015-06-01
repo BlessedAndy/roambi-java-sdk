@@ -4,6 +4,9 @@
  */
 package com.mellmo.roambi.cli.hidden.commands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -12,11 +15,9 @@ import com.mellmo.roambi.api.model.User;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import com.mellmo.roambi.cli.commands.CommandBase;
 
-import org.apache.log4j.Logger;
-
 @Parameters(separators = "=", commandDescription = "Invite a user")
 public class UserInviteCommand extends CommandBase{
-    private static Logger logger = Logger.getLogger(UserInviteCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(UserInviteCommand.class);
     private final String commandName = "userinvite";
     /*primary email, given name, family name, role*/
 
