@@ -4,6 +4,9 @@
  */
 package com.mellmo.roambi.cli.hidden.commands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -11,11 +14,9 @@ import com.mellmo.roambi.api.model.User;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import com.mellmo.roambi.cli.commands.CommandBase;
 
-import org.apache.log4j.Logger;
-
 @Parameters(separators = "=", commandDescription = "Get user information")
 public class UserInfoCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(UserInfoCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(UserInfoCommand.class);
     private final String commandName = "userinfo";
 
     @Parameter(names="--id", description="user id")

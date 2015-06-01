@@ -7,7 +7,8 @@ package com.mellmo.roambi.cli.commands;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -24,7 +25,7 @@ import com.mellmo.roambi.cli.client.RoambiClientUtil;
  */
 @Parameters(separators="=", commandDescription="add permissions to a file")
 public class AddPermissionCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(AddPermissionCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(AddPermissionCommand.class);
     protected String name = "addPermission";
 
     @Parameter(names="--target", description="target file")

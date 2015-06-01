@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mellmo.roambi.api.RoambiApiApplication;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -26,7 +27,7 @@ import com.mellmo.roambi.api.model.Account;
  */
 public class RoambiClientWrapper implements RoambiApiApplication {
 
-    static private Logger logger = Logger.getLogger(RoambiClientWrapper.class);
+    static private Logger logger = LoggerFactory.getLogger(RoambiClientWrapper.class);
 
     protected String serviceUrl;
     protected int apiVersion=1;

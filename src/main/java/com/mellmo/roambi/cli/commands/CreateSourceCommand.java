@@ -9,7 +9,8 @@ import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
 import java.io.File;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -27,7 +28,7 @@ import com.mellmo.roambi.cli.client.RoambiClientUtil;
 
 @Parameters(separators = "=", commandDescription = "Upload and create a file in the Roambi Repository")
 public class CreateSourceCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(CreateSourceCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(CreateSourceCommand.class);
     private final String commandName = "upload";
 
     @Parameter(names="--file", description="locale file you with to upload")

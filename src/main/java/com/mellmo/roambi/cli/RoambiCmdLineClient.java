@@ -13,8 +13,10 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -34,7 +36,7 @@ import com.mellmo.roambi.cli.client.RoambiCommandClient;
 @Parameters(separators = "=")
 public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiCommandClient.ClientConfiguration {
 
-    private static final Logger LOG = Logger.getLogger(RoambiCmdLineClient.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RoambiCmdLineClient.class);
 
     private RoambiClientWrapper clientWrapper;
 
@@ -78,7 +80,10 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     @Override
     protected void doExecute(String cmd) throws Exception {
         if (verbose) {
-            Logger.getRootLogger().setLevel(Level.DEBUG);
+            //LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).setLevel(Level.DEBUG);
+        	// this ties us directly to the logback implementation...
+        	ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        	root.setLevel(Level.INFO);
         }
         if (cmd == null) {
             if (scriptFile != null) {

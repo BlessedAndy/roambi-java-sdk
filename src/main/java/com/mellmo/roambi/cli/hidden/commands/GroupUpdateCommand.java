@@ -4,16 +4,17 @@
  */
 package com.mellmo.roambi.cli.hidden.commands;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beust.jcommander.Parameter;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.Group;
 import com.mellmo.roambi.cli.commands.CommandBase;
 
-import org.apache.log4j.Logger;
-
 
 public class GroupUpdateCommand extends CommandBase{
-    private static Logger logger = Logger.getLogger(GroupUpdateCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(GroupUpdateCommand.class);
     private final String commandName = "groupUpdate";
 
     @Parameter(names="--id", description="group id")

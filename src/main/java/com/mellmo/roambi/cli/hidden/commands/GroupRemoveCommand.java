@@ -4,6 +4,11 @@
  */
 package com.mellmo.roambi.cli.hidden.commands;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -11,13 +16,9 @@ import com.mellmo.roambi.api.model.Group;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 import com.mellmo.roambi.cli.commands.CommandBase;
 
-import org.apache.log4j.Logger;
-
-import java.util.List;
-
 @Parameters(separators = "=", commandDescription = "Remove user from group(s)")
 public class GroupRemoveCommand extends CommandBase {
-    private static Logger logger = Logger.getLogger(UserUpdateCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(UserUpdateCommand.class);
     private final String commandName = "groupremove";
 
     @Parameter(names="--id", description="groupId if removing from a single group.", required=false)

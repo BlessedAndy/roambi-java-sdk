@@ -10,7 +10,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
@@ -24,7 +25,7 @@ import com.mellmo.roambi.api.RoambiApiClient;
 @Parameters(separators = "=", commandDescription = "Set sync of folder(s) in Roambi Repository")
 public class SetFolderSyncCommand extends CommandBase {
 	
-	private static Logger LOG = Logger.getLogger(SetFolderSyncCommand.class);
+	private static Logger LOG = LoggerFactory.getLogger(SetFolderSyncCommand.class);
 	private final String commandName = "sync_dir";
 	
 	@Parameter(names = {"-s", "--sync"}, description = "Enable sync for the folder")

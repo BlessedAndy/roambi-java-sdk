@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
@@ -33,7 +34,7 @@ import com.mellmo.roambi.api.model.User;
 public class RoambiClientUtil {
 
     private static final String RFS = "rfs";
-    private static Logger log = Logger.getLogger(RoambiClientUtil.class);
+    private static Logger log = LoggerFactory.getLogger(RoambiClientUtil.class);
 
     //cheesy check to see if we are a UID or a path
     public static boolean isUIDValue(String value){

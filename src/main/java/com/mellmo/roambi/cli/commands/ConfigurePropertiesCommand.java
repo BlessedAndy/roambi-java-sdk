@@ -11,7 +11,8 @@ import java.io.OutputStreamWriter;
 import java.util.Properties;
 import java.util.Scanner;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
@@ -29,7 +30,7 @@ import com.mellmo.roambi.api.RoambiApiClient;
 public class ConfigurePropertiesCommand extends ConfigureCommand {
 
     private final String commandName = "configure";
-    private static Logger logger = Logger.getLogger(ConfigurePropertiesCommand.class);
+    private static Logger logger = LoggerFactory.getLogger(ConfigurePropertiesCommand.class);
 
     private String propFile=null;
 
