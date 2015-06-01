@@ -17,3 +17,5 @@ roambi.log
 .settings
 */bin/
 */target
+
+log
