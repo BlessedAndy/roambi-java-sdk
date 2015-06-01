@@ -81,8 +81,9 @@ public class RoambiCmdLineClient  extends RoambiCommandClient implements RoambiC
     protected void doExecute(String cmd) throws Exception {
         if (verbose) {
         	// this ties us directly to the logback implementation...
-        	ch.qos.logback.classic.Logger root = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-        	root.setLevel(Level.DEBUG);
+        	((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.DEBUG);
+        	((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("httpclient")).setLevel(Level.DEBUG);
+        	((ch.qos.logback.classic.Logger) LoggerFactory.getLogger("org.apache.commons.httpclient")).setLevel(Level.DEBUG);
         }
         if (cmd == null) {
             if (scriptFile != null) {
