@@ -12,7 +12,8 @@ import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -25,7 +26,7 @@ public class ContentItem implements IBaseModel {
 	protected static final String FILE_TYPE = "file_type";
 	public static final String ANALYTICS = "ANALYTICS";
 	protected static final String FOLDER = "FOLDER";
-	protected static final Logger LOG = Logger.getLogger(ContentItem.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(ContentItem.class);
 	private String uid;
 	private String name;
     private Permissions permissions;

@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.api;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -19,7 +21,8 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.api.client.auth.oauth2.AuthorizationCodeRequestUrl;
 import com.google.common.base.Strings;
@@ -27,8 +30,6 @@ import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.Account;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.User;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 public abstract class BaseApiClient extends RESTClient {
 	public static final String TITLE = "title";
@@ -41,7 +42,7 @@ public abstract class BaseApiClient extends RESTClient {
 	public static final String DEFAULT_API_SERVICE_BASE_URL = "https://api.roambi.com/";
 	protected static final String TOKEN_ENDPOINT = "token";
 	protected static final String AUTHORIZE_ENDPOINT = "authorize";
-	protected static final Logger LOG = Logger.getLogger(BaseApiClient.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(BaseApiClient.class);
 
 	protected String clientId;
 	protected String clientSecret;
