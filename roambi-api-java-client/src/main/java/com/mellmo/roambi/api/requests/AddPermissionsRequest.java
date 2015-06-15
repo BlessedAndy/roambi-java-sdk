@@ -23,6 +23,7 @@ public class AddPermissionsRequest {
 		}
 	}
 
+	private RoambiFilePermission publicPermission = null;
 	private List<FilePermission> users;
 	private List<FilePermission> groups;
 
@@ -32,6 +33,9 @@ public class AddPermissionsRequest {
 	}
 	
 	public AddPermissionsRequest(final List<String> users, final List<String> groups, RoambiFilePermission permission) {
+		if (permission == RoambiFilePermission.PUBLIC) {
+			publicPermission = permission;
+		}
 		this.users = asList(users, permission);
 		this.groups = asList(groups, permission);
 	}
@@ -81,6 +85,12 @@ public class AddPermissionsRequest {
 			//JSONObject groupPermission = new JSONObject();
 			//groupPermission.put(group.uid, group.permission.toString());
 			groupsMap.put(group.uid, group.permission.toString());
+		}
+		
+		if (this.publicPermission != null) {
+			JSONObject publicMap = new JSONObject();
+			publicMap.put(RoambiFilePermission.READ, "true");
+			body.put("public_access", publicMap);
 		}
 
 		body.put("users", usersMap);

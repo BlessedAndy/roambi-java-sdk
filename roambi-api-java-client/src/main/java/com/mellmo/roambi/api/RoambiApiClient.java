@@ -317,7 +317,11 @@ public class RoambiApiClient extends BaseApiClient {
 		return (Folder) invokeMethodGetContentItemApiDetailsResponse(method);
 	}
 	
-    public ContentItem addPermission(ContentItem contentItem, Group group, RoambiFilePermission permission) throws ApiException, IOException {
+	public ContentItem addPublicAccess(ContentItem contentItem) throws ApiException, IOException {
+		return addPermission(contentItem, new ArrayList<String>(), new ArrayList<String>(), RoambiFilePermission.PUBLIC);
+	}
+
+	public ContentItem addPermission(ContentItem contentItem, Group group, RoambiFilePermission permission) throws ApiException, IOException {
     	return addPermission(contentItem, asList(Group.GROUP, group), null, permission);
     }
     

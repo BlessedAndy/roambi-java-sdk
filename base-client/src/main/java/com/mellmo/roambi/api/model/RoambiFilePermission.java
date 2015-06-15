@@ -7,7 +7,8 @@ package com.mellmo.roambi.api.model;
 public enum RoambiFilePermission {
 
 	READ,
-	WRITE
+	WRITE,
+	PUBLIC
 	;
 
 }
