@@ -19,3 +19,5 @@ roambi.log
 */target
 
 log
+logs
+.DS_Store
