@@ -106,6 +106,9 @@ Usage: <main class> [options] [command] [command options]
     -props, --props
        Property file location. If not specified, default to
        roambi-api-cli.properties
+    --verbose
+       Verbose mode
+       Default: false       
   Commands:
     addPermission      add permissions to a file
       Usage: addPermission [options]
