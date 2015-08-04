@@ -25,7 +25,8 @@ public class RefreshDocumentWithFileCommand extends RefreshDocumentCommandBase {
 	
 	private static final String commandName = "publish-with-file";
 	
-	@Parameter(names="--file", description="local source file") String localFilePath;
+	@Parameter(names="--file", description="local source file", required = true) 
+	String localFilePath;
 
 	@Override public String getName() {
 		return commandName;
