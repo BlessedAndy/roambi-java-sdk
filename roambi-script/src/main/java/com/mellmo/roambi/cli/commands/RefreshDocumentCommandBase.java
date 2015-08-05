@@ -7,6 +7,7 @@ package com.mellmo.roambi.cli.commands;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.addPermission;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.findFile;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.IOException;
 import java.util.List;
@@ -68,15 +69,15 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 		ApiJob job = clientExecute(client, toContentItem(template), toContentItem(folderUid));
 		int tries = 0;
 		while(job.getStatus()==ApiJob.JobStatus.PROCESSING) {
-			Thread.sleep(job.getRetryAfter() * 1000);
-			LOG.debug("checking job...");
+			Thread.sleep(job.getRetryAfter() * 1000 * (tries / 10 + 1));
+			LOG.info("checking job... tries: " + (tries + 1));
 			job = client.getJob(job.getUid());
 			if (++tries > maxTries) {
-				throw new Exception("Reached max tries.  Job aborted.");
+				throw new Exception("Aborting job.  Maximum retries reached for job");
 			}
 		}
-		if (job.getException() != null && !"".equals(job.getException())) {
+		if (isNotBlank(job.getException())) {
 			throw new Exception(job.getException());
 		}
-	}
+	}	
 }
