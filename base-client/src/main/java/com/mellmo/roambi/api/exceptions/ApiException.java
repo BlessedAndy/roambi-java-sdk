@@ -28,7 +28,7 @@ public class ApiException extends Exception {
 	/**
 	 * The HTTP Status Code returned by the server
 	 * @return the HTTP status code
-	 * @see http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+	 * @see <a href="http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html">http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html</a>
 	 */
 	public int getStatus() {
 		return status;
