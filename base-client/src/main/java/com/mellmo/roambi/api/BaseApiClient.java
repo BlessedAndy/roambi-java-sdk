@@ -57,7 +57,7 @@ public abstract class BaseApiClient extends RESTClient {
 	protected User currentUser = null;
 	protected String currentAccountUid = null;
 	protected String redirect_uri = "roambi-api://client.roambi.com/authorize";
-	protected int retries = 0;
+	protected int retries = 3;
     
     public BaseApiClient() {
     }
@@ -259,17 +259,31 @@ public abstract class BaseApiClient extends RESTClient {
 						return invoke();
 					} catch (HttpException e) {
 						LOG.error(logError(tries, e));
-						if (tries > retries)	throw e;
-						
+						if (tries > retries) {
+							throw e;
+						}						
 					} catch (IOException e) {
 						LOG.error(logError(tries, e));
-						if (tries > retries)	throw e;
+						if (tries > retries) {
+							throw e;
+						}
 					} catch (ApiException e ) {
+						
                         if ("invalid_token".equals(e.getCode()) && neverRefreshedToken) {
                             neverRefreshedToken = false;
                             tries--; // don't count the last attempt
                             refreshToken();
                             setAuthorizationHeader(method, getAccessToken());
+                        } else if (e.getStatus() == 503) {
+                        	LOG.error(logError(tries, e));
+                        	if (tries > retries) {
+                        		throw e;
+                        	}
+                        } else if (e.getStatus() == 504) {
+                        	LOG.error(logError(tries, e));
+                        	if (tries > retries) {
+                        		throw e;
+                        	}
                         } else {
                             throw e;
                         }
