@@ -12,6 +12,8 @@ import com.mellmo.roambi.api.utils.ResponseUtils;
 
 public class ApiException extends Exception {
 	
+	private static final long serialVersionUID = 1L;
+	
 	private int status;
 	private String code;
 	private String message;
@@ -23,10 +25,19 @@ public class ApiException extends Exception {
 		this.message = message;
 	}
 
+	/**
+	 * The HTTP Status Code returned by the server
+	 * @return the HTTP status code
+	 * @see http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+	 */
 	public int getStatus() {
 		return status;
 	}
 
+	/**
+	 * Roambi API error code returned by the server 
+	 * @return the Roambi API error code
+	 */
 	public String getCode() {
 		return code;
 	}
