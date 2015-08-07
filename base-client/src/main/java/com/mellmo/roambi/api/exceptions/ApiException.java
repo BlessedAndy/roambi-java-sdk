@@ -5,6 +5,7 @@
 package com.mellmo.roambi.api.exceptions;
 
 import java.io.InputStream;
+import java.io.IOException;
 
 import com.google.common.io.Closeables;
 import com.google.gson.JsonObject;
@@ -51,19 +52,22 @@ public class ApiException extends Exception {
 		}
 	}
 
-	public static ApiException fromApiResponse(final int statusCode, final InputStream stream) {
+	public static ApiException fromApiResponse(final int statusCode, final InputStream stream) throws IOException {
 		if (stream == null) {
 			return new ApiException(statusCode, null, null);
 		}
 		else {
+			boolean threw = true;
 			try {
 				JsonObject error = ResponseUtils.responseToObject(stream);
 				String desc = error.get("error_description").isJsonNull() ? null : error.get("error_description").getAsString();
-				return new ApiException(statusCode, error.get("error").getAsString(), desc);
+				ApiException ex = new ApiException(statusCode, error.get("error").getAsString(), desc);
+				threw = false;
+				return ex;
 			} catch (Exception ex) {
 				return new ApiException(statusCode, "Unknown Error", null);
 			} finally {
-				Closeables.closeQuietly(stream);
+				Closeables.close(stream, threw);
 			}
 		}
 	}
