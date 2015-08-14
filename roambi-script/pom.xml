@@ -4,7 +4,7 @@
 
     <groupId>com.mellmo.roambi.api</groupId>
     <artifactId>roambi-api-java-cli</artifactId>
-    <version>0.0.9-SNAPSHOT</version>
+    <version>0.0.10-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,7 +21,7 @@
         <dependency>
             <groupId>com.mellmo.roambi.api</groupId>
             <artifactId>api-client</artifactId>
-            <version>0.0.4-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.beust</groupId>

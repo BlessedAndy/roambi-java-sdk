@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mellmo.roambi.api</groupId>
     <artifactId>base-client</artifactId>
-    <version>0.0.4-SNAPSHOT</version>
+    <version>0.0.10-SNAPSHOT</version>
     <name>Base API Client</name>
 
     <properties>
@@ -148,12 +148,12 @@
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
             <exclusions>
-                <exclusion>  
+                <exclusion>
                     <!-- https://code.google.com/p/json-simple/issues/detail?id=91 -->
                     <groupId>junit</groupId>
                     <artifactId>junit</artifactId>
                 </exclusion>
-            </exclusions>             
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.google.http-client</groupId>
