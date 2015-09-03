@@ -5,6 +5,7 @@
 package com.mellmo.roambi.cli.commands;
 
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.io.File;
 import java.util.List;
@@ -16,6 +17,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.model.ContentItem;
+import com.mellmo.roambi.api.model.RoambiFilePermission;
 import com.mellmo.roambi.cli.client.RoambiClientUtil;
 
 /**
@@ -40,8 +42,13 @@ public class CreateSourceCommand extends CommandBase {
     @Parameter(names="--title", description="title of the new file")
     private String title;
 
-    @Parameter(names="--permission", description="set permissions for new file", variableArity = true, required=false)
+    @Deprecated @Parameter(names="--permission", description="(Deprecated) set permissions for new file", variableArity = true, required=false)
     private List<String> permissionIds;
+    
+	@Parameter(names="--users", description="set users permissions for new file", variableArity=true, required=false)
+	protected List<String> users;
+	@Parameter(names="--groups", description="set groups permissions for new file", variableArity=true, required=false)
+	protected List<String> groups;
 
     public CreateSourceCommand(){}
 
@@ -62,13 +69,21 @@ public class CreateSourceCommand extends CommandBase {
         logger.info("title: " + title);
         if(permissionIds !=null) {
             logger.info("permission:" + permissionIds.toString());
+            logger.warn("permission parameter is deprecated, use users and groups parameters instead.");
         }
+		if (users != null)	logger.info("users:" + users.toString());
+		if (groups != null)	logger.info("groups:" + groups.toString());
 
-        File sourceFile = new File(newFile);
+        final File sourceFile = new File(newFile);
         client.currentUser();
-        ContentItem newItem = client.createFile(toContentItem(parentFolder), title, sourceFile);
-        if(permissionIds != null && newItem != null) {
-            RoambiClientUtil.addPermission(newItem, permissionIds,client);
-        }
+        final ContentItem newItem = client.createFile(toContentItem(parentFolder), title, sourceFile);
+		if (newItem != null) {
+			if (isNotEmpty(users) || isNotEmpty(groups)) {
+				client.addPermission(newItem, groups, users, RoambiFilePermission.WRITE);
+			}
+			else if (permissionIds != null) {
+				RoambiClientUtil.addPermission(newItem, permissionIds, client);
+			}
+		}
     }
 }
