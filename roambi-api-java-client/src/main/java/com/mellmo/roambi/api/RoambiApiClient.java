@@ -386,7 +386,7 @@ public class RoambiApiClient extends BaseApiClient {
 	private ApiJob invokeMethodGetApiJobResponse(final HttpMethodBase method) throws ApiException, IOException {
 		final ApiInvocationHandler handler = new ApiInvocationHandler(method) {
 			public Object onSuccess() throws HttpException, IOException {
-				return null;
+				return ApiJob.fromApiResponse(method.getResponseBodyAsStream());
 			}
 		};
 		return (ApiJob) handler.invokeApi();
