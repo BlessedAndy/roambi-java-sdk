@@ -8,6 +8,7 @@ import static com.mellmo.roambi.cli.client.RoambiClientUtil.addPermission;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.findFile;
 import static com.mellmo.roambi.cli.client.RoambiClientUtil.toContentItem;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.collections.CollectionUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.mellmo.roambi.api.RoambiApiClient;
 import com.mellmo.roambi.api.exceptions.ApiException;
 import com.mellmo.roambi.api.model.ApiJob;
 import com.mellmo.roambi.api.model.ContentItem;
+import com.mellmo.roambi.api.model.RoambiFilePermission;
 
 /**
  * 
@@ -35,8 +37,12 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 	String destinationFolder;
 	@Parameter(names="--title", description="title of the new document")
 	String title;
-	@Parameter(names="--permission", description="set permissions for new document", variableArity = true, required=false)
+	@Deprecated @Parameter(names="--permission", description="(Deprecated) set permissions for new document", variableArity = true, required=false)
 	protected List<String> permissionIds;
+	@Parameter(names="--users", description="set users permissions for new document", variableArity=true, required=false)
+	protected List<String> users;
+	@Parameter(names="--groups", description="set groups permissions for new document", variableArity=true, required=false)
+	protected List<String> groups;
 	boolean overwrite=true;
 
 	protected abstract String getFilelog();
@@ -51,7 +57,10 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 		LOG.info("overwrite: " + overwrite);
 		if (permissionIds !=null) {
 			LOG.info("permission:" + permissionIds.toString());
+			LOG.warn("permission parameter is deprecated, use users and groups parameters instead.");
 		}
+		if (users != null)	LOG.info("users:" + users.toString());
+		if (groups != null)	LOG.info("groups:" + groups.toString());
 		
 		client.currentUser();
 		publish(client, destinationFolder);
@@ -60,8 +69,13 @@ public abstract class RefreshDocumentCommandBase extends CommandBase {
 	
 	private void addPermissions(final RoambiApiClient client, final String folderUid) throws ApiException, IOException {
 		final ContentItem newItem = findFile(folderUid, new ContentItem("", title), client);
-		if (permissionIds != null && newItem != null) {
-			addPermission(newItem, permissionIds, client);
+		if (newItem != null) {
+			if (isNotEmpty(users) || isNotEmpty(groups)) {
+				client.addPermission(newItem, groups, users, RoambiFilePermission.WRITE);
+			}
+			else if (permissionIds != null) {
+				addPermission(newItem, permissionIds, client);
+			}
 		}
 	}
 	
