@@ -117,11 +117,11 @@ Usage: <main class> [options] [command] [command options]
              'view' or 'publish'
              Default: view
               --groupIds
-             group ids
+             group names or ids
               --target
              target file
               --userIds
-             user ids
+             user emails or ids
 
     configure      Bootstrap a the client .properties file
       Usage: configure [options]
@@ -146,24 +146,28 @@ Usage: <main class> [options] [command] [command options]
               --ignoreFailure
              Do not report error when failed.
              Default: false
-              --permission
-             set permissions for folder
               --title
              title of the new folder
+              --users
+             set users permissions for folder
+              --groups
+             set groups permissions for folder
 
     publish      Refresh a Roambi document
       Usage: publish [options]
         Options:
               --folder
              remote folder destination
-              --permission
-             set permissions for new document
               --source
              remote source file
               --template
              template rbi
               --title
              title of the new document
+              --users
+             set users permissions for new document
+              --groups
+             set groups permissions for new document
 
     publish-with-file      Refresh a Roambi document based on data in a local file
       Usage: publish-with-file [options]
@@ -172,22 +176,24 @@ Usage: <main class> [options] [command] [command options]
              local source file
               --folder
              remote folder destination
-              --permission
-             set permissions for new document
               --template
              template rbi
               --title
              title of the new document
+              --users
+             set users permissions for new document
+              --groups
+             set groups permissions for new document
 
     removePermission      remove permissions to a file
       Usage: removePermission [options]
         Options:
               --groupIds
-             group ids
+             group names or ids
               --target
              target file
               --userIds
-             user ids
+             user emails or ids
 
     rmdir      Delete a folder in the Roambi Repository
       Usage: rmdir [options]
@@ -219,10 +225,12 @@ Usage: <main class> [options] [command] [command options]
              locale file you with to upload
               --folder
              remote folder destination
-              --permission
-             set permissions for new file
               --title
              title of the new file
+              --users
+             set users permissions for new file
+              --groups
+             set groups permissions for new file
 
     version      Usage: version [options]
 
