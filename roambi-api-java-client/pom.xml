@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mellmo.roambi.api</groupId>
     <artifactId>api-client</artifactId>
-    <version>0.0.10-SNAPSHOT</version>
+    <version>0.0.11-SNAPSHOT</version>
     <name>Roambi API Java Client</name>
 
     <properties>
