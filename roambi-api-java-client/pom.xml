@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mellmo.roambi.api</groupId>
     <artifactId>api-client</artifactId>
-    <version>0.0.11-SNAPSHOT</version>
+    <version>0.0.12-SNAPSHOT</version>
     <name>Roambi API Java Client</name>
 
     <properties>
@@ -76,6 +76,26 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+            	<groupId>org.apache.maven.plugins</groupId>
+            	<artifactId>maven-jar-plugin</artifactId>
+            	<version>2.2</version>
+            	<configuration>
+            		<archive>
+            			<manifest>
+            				<mainClass>com.mellmo.roambi.api.RoambiApiClient</mainClass>
+            				<packageName>com.mellmo.roambi.api</packageName>
+            			</manifest>
+            			<manifestEntries>
+            				<build_key>${roambi.buildKey}</build_key>
+            				<build_number>${roambi.buildNumber}</build_number>
+            				<build_timestamp>${roambi.buildTimestamp}</build_timestamp>
+            				<scm_branch>${roambi.scm-branch}</scm_branch>
+            				<scm_commit>${roambi.scm-commit}</scm_commit>
+            			</manifestEntries>
+            		</archive>
+            	</configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
