@@ -4,6 +4,8 @@
  */
 package com.mellmo.roambi.cli.client;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.Map;
@@ -111,7 +113,11 @@ public class RoambiCommandClient {
                     ((ConfigureCommand)cb).setPropertiesPath(configuration.getPropertiesFile());
                     cb.execute(null);
                 } else {
-                    cb.execute(configuration.getClient());
+                	final RoambiApiClient client = configuration.getClient();
+                	if (client != null && isNotBlank(cb.getPluginVersion())) {
+                		client.setPluginVersion(cb.getPluginVersion());
+                	}
+                    cb.execute(client);
                 }
                 return;
             }

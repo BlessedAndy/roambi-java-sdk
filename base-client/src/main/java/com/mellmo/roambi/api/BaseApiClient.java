@@ -58,6 +58,7 @@ public abstract class BaseApiClient extends RESTClient {
 	protected String currentAccountUid = null;
 	protected String redirect_uri = "roambi-api://client.roambi.com/authorize";
 	protected int retries = 3;
+	protected String pluginVersion = null;
     
     public BaseApiClient() {
     }
@@ -124,6 +125,14 @@ public abstract class BaseApiClient extends RESTClient {
 	
 	public void setRefreshToken(final String refreshToken) {
 		this.refreshToken = refreshToken;
+	}
+	
+	public void setPluginVersion(final String pluginVersion) {
+		this.pluginVersion = pluginVersion;
+	}
+	
+	protected String getPluginVersion() {
+		return this.pluginVersion;
 	}
 
 	public abstract List<Account> getUserAccounts() throws ApiException, IOException;
