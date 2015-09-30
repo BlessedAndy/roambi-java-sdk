@@ -86,8 +86,10 @@
             			<manifest>
             				<mainClass>com.mellmo.roambi.api.RoambiApiClient</mainClass>
             				<packageName>com.mellmo.roambi.api</packageName>
+            				<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             			</manifest>
             			<manifestEntries>
+            				<app_name>RoambiJavaSDK</app_name>
             				<build_key>${roambi.buildKey}</build_key>
             				<build_number>${roambi.buildNumber}</build_number>
             				<build_timestamp>${roambi.buildTimestamp}</build_timestamp>
