@@ -316,7 +316,7 @@ public abstract class RESTClient {
 	}
 	
 	protected PutMethod buildPutMethod(final String url, final NameValuePair... params) throws ApiException {
-		return buildPutMethod(getAccessToken(), url, FORM_URL_ENCODED, params);
+		return buildPutMethod(getAccessToken(), getPluginVersion(), url, FORM_URL_ENCODED, params);
 	}
 
 	protected abstract String getAccessToken() throws ApiException;
