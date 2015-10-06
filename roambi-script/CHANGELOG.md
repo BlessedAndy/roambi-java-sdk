@@ -1,6 +1,10 @@
 Changelog
 =============
 
+0.0.12
+--------------------------
+* adding plugin name/version to requests' User-Agent header
+
 0.0.11
 --------------------------
 * deprecate `--permissions` parameter for commands support add/remove permissions
