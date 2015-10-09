@@ -259,7 +259,7 @@ public abstract class RESTClient {
 		return params.toArray(new NameValuePair[params.size()]);
 	}
 	
-	protected DeleteMethod buildDeleteMethod(final String url) throws ApiException {
+	public DeleteMethod buildDeleteMethod(final String url) throws ApiException {
 		return buildDeleteMethod(getAccessToken(), getPluginVersion(), url);
 	}
 	
