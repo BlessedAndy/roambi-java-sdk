@@ -21,11 +21,18 @@ public abstract class CommandBase {
 
     @Parameter(names="--maxTries", hidden=true)
     protected int maxTries = 50;
+    
+    @Parameter(names="--plugin", hidden=true, required=false)
+    protected String pluginVersion = null;
 
     public boolean getHelp() {
         return help;
     }
-
+    
+    public String getPluginVersion() {
+    	return this.pluginVersion;
+    }
+    
     // abstract functions
     public abstract String getName();
     public abstract void execute(RoambiApiClient client) throws Exception;

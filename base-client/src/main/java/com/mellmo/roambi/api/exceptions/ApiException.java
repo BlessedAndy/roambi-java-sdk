@@ -5,6 +5,10 @@
 package com.mellmo.roambi.api.exceptions;
 
 import java.io.InputStream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 import com.google.common.io.Closeables;
@@ -13,6 +17,7 @@ import com.mellmo.roambi.api.utils.ResponseUtils;
 
 public class ApiException extends Exception {
 	
+	protected static final Logger LOG = LoggerFactory.getLogger(ApiException.class);
 	private static final long serialVersionUID = 1L;
 	
 	private int status;
@@ -58,13 +63,18 @@ public class ApiException extends Exception {
 		}
 		else {
 			boolean threw = true;
+			JsonObject error = null;
 			try {
-				JsonObject error = ResponseUtils.responseToObject(stream);
+				error = ResponseUtils.responseToObject(stream);
 				String desc = error.get("error_description").isJsonNull() ? null : error.get("error_description").getAsString();
 				ApiException ex = new ApiException(statusCode, error.get("error").getAsString(), desc);
 				threw = false;
 				return ex;
-			} catch (Exception ex) {
+			} catch (Exception e) {
+				LOG.error(e.getMessage());
+				if (error != null) {
+					LOG.debug("Error json: " + error.toString());
+				}
 				return new ApiException(statusCode, "Unknown Error", null);
 			} finally {
 				Closeables.close(stream, threw);

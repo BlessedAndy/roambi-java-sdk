@@ -4,7 +4,7 @@
 
     <groupId>com.mellmo.roambi.api</groupId>
     <artifactId>roambi-api-java-cli</artifactId>
-    <version>0.0.11-SNAPSHOT</version>
+    <version>0.0.12-SNAPSHOT</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -12,9 +12,9 @@
     </properties>
 
     <scm>
-      <connection>scm:git:git@github.com:Roambi/roambi-script.git</connection>
-      <developerConnection>scm:git:git@github.com:Roambi/roambi-script.git</developerConnection>
-      <url>scm:git:git@github.com:Roambi/roambi-script.git</url>
+      <connection>scm:git:git@github.com:Roambi/roambi-java-sdk.git</connection>
+      <developerConnection>scm:git:git@github.com:Roambi/roambi-java-sdk.git</developerConnection>
+      <url>scm:git:git@github.com:Roambi/roambi-java-sdk.git</url>
     </scm>
 
     <dependencies>
@@ -165,6 +165,7 @@
                                     <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                                 </manifest>
                                 <manifestEntries>
+                                	<app_name>RoambiScript</app_name>
 		                            <build_key>${roambi.buildKey}</build_key>
 		                            <build_number>${roambi.buildNumber}</build_number>
 		                            <build_timestamp>${roambi.buildTimestamp}</build_timestamp>
