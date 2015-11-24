@@ -80,6 +80,7 @@ public class RoambiClientWrapper implements RoambiApiApplication {
 
             String insecure = props.getProperty("insecure");
             if ((insecure != null) && Boolean.parseBoolean(insecure)) {
+                logger.warn("Disabling SSL Verification. Not recommended for production use.");
                 roambiApiClient.disableSSLVerification();
             }
 
