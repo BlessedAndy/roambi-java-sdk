@@ -65,47 +65,28 @@ public abstract class RESTClient {
 	protected static final Logger LOG = LoggerFactory.getLogger(RESTClient.class);
 	protected static final String TEXT_JSON = "text/json";
 	protected static final String UTF_8 = "utf-8";
-	protected static final String USER_AGENT_VALUE = getUserAgent();
-	
-	public static void setHeaders(final HttpMethodBase method, final String accessToken, final String pluginVersion) {
-		setAuthorizationHeader(method, accessToken);
-		setUserAgentHeader(method, pluginVersion);
+
+	protected String userAgentString = getDefaultUserAgent();
+
+	protected void setHeaders(final HttpMethodBase method) throws ApiException {
+		setAuthorizationHeader(method, getAccessToken());
+		setUserAgentHeader(method);
 	}
 	
-	public static void setUserAgentHeader(final HttpMethodBase method, final String pluginVersion) {
-		method.setRequestHeader(USER_AGENT, isNotBlank(pluginVersion) ? String.format("%s %s", USER_AGENT_VALUE, pluginVersion) : USER_AGENT_VALUE);
-		if (LOG.isDebugEnabled())	LOG.debug(" User-Agent header: " + method.getRequestHeader(USER_AGENT));
+	protected void setUserAgentHeader(final HttpMethodBase method) {		
+		String userAgentWithPluginVersionString = userAgentString;
+		String pluginVersion = getPluginVersion();
+		if (isNotBlank(pluginVersion)) {
+			userAgentWithPluginVersionString = String.format("%s %s", userAgentString, pluginVersion);
+		}
+		if (LOG.isDebugEnabled()) {
+			LOG.debug(" User-Agent header: " + userAgentWithPluginVersionString);
+		}
+		method.setRequestHeader(USER_AGENT, userAgentWithPluginVersionString);
 	}
 	
 	public static void setAuthorizationHeader(final HttpMethodBase method, final String accessToken) {
 		method.setRequestHeader(AUTHORIZATION, BEARER + accessToken);
-	}
-	
-	public static DeleteMethod buildDeleteMethod(final String accessToken, final String pluginVersion, final String url) {
-		final DeleteMethod method = new DeleteMethod(url);
-		setHeaders(method, accessToken, pluginVersion);
-		return method;
-	}
-	
-	public static GetMethod buildGetMethod(final String accessToken, final String pluginVersion, final String url, final NameValuePair... params) {
-		final GetMethod method = new GetMethod(url);
-		setHeaders(method, accessToken, pluginVersion);
-		if (params.length > 0) {
-			method.setQueryString(params);
-		}
-		return method;
-	}
-	
-	public static PutMethod buildPutMethod(final String accessToken, final String pluginVersion, final String url, final NameValuePair... params) {
-		return buildPutMethod(accessToken, pluginVersion, url, FORM_URL_ENCODED, params);
-	}
-
-	public static PutMethod buildPutMethod(final String accessToken, final String pluginVersion, final String url, final String contentType, final NameValuePair... params) {
-		final PutMethod method = new PutMethod(url);
-		setHeaders(method, accessToken, pluginVersion);
-		final RequestEntity requestEntity = getStringRequestEntity(contentType, params);
-		method.setRequestEntity(requestEntity);
-		return method;
 	}
 	
     /**
@@ -197,18 +178,6 @@ public abstract class RESTClient {
 		return new StringPart(name, JsonUtils.createJsonFromParameters(params), UTF_8);
 	}
 	
-	private static PostMethod buildPostMethod(final String accessToken, final String pluginVersion, final String url) {
-		final PostMethod method = new PostMethod(url);
-		setHeaders(method, accessToken, pluginVersion);
-		return method;
-	}
-	
-	private static PostMethod buildPostMethod(final String accessToken, final String pluginVersion, final String url, final RequestEntity requestEntity) {
-		final PostMethod method = buildPostMethod(accessToken, pluginVersion, url);
-		method.setRequestEntity(requestEntity);
-		return method;
-	}
-	
 	private static RequestEntity getStringRequestEntity(final String contentType, final NameValuePair... params) {
 		final String entityContent = isJson(contentType) ? JsonUtils.createJsonFromParameters(params) : EncodingUtil.formUrlEncode(params, UTF_8);
 		return getStringRequestEntity(contentType, entityContent);
@@ -219,12 +188,12 @@ public abstract class RESTClient {
 		return getStringRequestEntity(contentType, entityContent);
 	}
 	
-	private static String getUserAgent() {
+	private String getDefaultUserAgent() {
 		String name = "RoambiJavaSDK";
 		String version = "version";
 		String build = "build";
 		try {
-			final File file = new File(RESTClient.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+			final File file = new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI());
 			if (file.isFile()) {
 				final JarFile jar = new JarFile(file);
 				final Manifest manifest = jar.getManifest();
@@ -260,19 +229,32 @@ public abstract class RESTClient {
 	}
 	
 	public DeleteMethod buildDeleteMethod(final String url) throws ApiException {
-		return buildDeleteMethod(getAccessToken(), getPluginVersion(), url);
+		final DeleteMethod method = new DeleteMethod(url);
+		setHeaders(method);
+		return method;
 	}
 	
 	protected GetMethod buildGetMethod(final String url, final NameValuePair... params) throws ApiException {
-		return buildGetMethod(getAccessToken(), getPluginVersion(), url, params);
+		final GetMethod method = new GetMethod(url);
+		setHeaders(method);
+		if (params.length > 0) {
+			method.setQueryString(params);
+		}
+		return method;
 	}
-	
+
+	private PostMethod buildPostMethod(final String url) throws ApiException {
+		final PostMethod method = new PostMethod(url);
+		setHeaders(method);
+		return method;
+	}
+		
 	protected PostMethod buildPostMethod(final String url, final NameValuePair... params) throws ApiException {
 		return buildPostMethod(url, FORM_URL_ENCODED, params);
 	}
 	
 	public PostMethod buildFileUploadMethod(final String url, Map<String, Object> params) throws ApiException, FileNotFoundException {
-		final PostMethod method = buildPostMethod(getAccessToken(), getPluginVersion(), url);
+		final PostMethod method = buildPostMethod(url);
 
 		List<Part> parts = new ArrayList<Part>();
 		Part part = null;
@@ -297,26 +279,33 @@ public abstract class RESTClient {
 	}
 	
 	protected PostMethod buildPostMethod(final String url, final Part... parts) throws ApiException {
-		final PostMethod method = buildPostMethod(getAccessToken(), getPluginVersion(), url);
+		final PostMethod method = buildPostMethod(url);
 		final MultipartRequestEntity multipartEntity = new MultipartRequestEntity(parts, method.getParams());
 		method.setRequestEntity(multipartEntity);
 		return method;
 	}
 	
 	protected PostMethod buildPostMethod(final String url, final RequestEntity entity) throws ApiException {
-		return buildPostMethod(getAccessToken(), getPluginVersion(), url, entity);
+		final PostMethod method = buildPostMethod(url);
+		method.setRequestEntity(entity);
+		return method;
 	}
 	
 	protected PostMethod buildPostMethod(final String url, final String contentType, final NameValuePair... params) throws ApiException {
-		return buildPostMethod(getAccessToken(), getPluginVersion(), url, getStringRequestEntity(contentType, params));
+		return buildPostMethod(url, getStringRequestEntity(contentType, params));
 	}
 	
 	protected PostMethod buildPostMethod(final String url, final String name, final String... values) throws ApiException {
 		return buildPostMethod(url, getStringRequestEntity(APPLICATION_JSON, name, required(name, values)));
 	}
-	
+
 	protected PutMethod buildPutMethod(final String url, final NameValuePair... params) throws ApiException {
-		return buildPutMethod(getAccessToken(), getPluginVersion(), url, FORM_URL_ENCODED, params);
+		final String contentType = FORM_URL_ENCODED;
+		final PutMethod method = new PutMethod(url);
+		setHeaders(method);
+		final RequestEntity requestEntity = getStringRequestEntity(contentType, params);
+		method.setRequestEntity(requestEntity);
+		return method;
 	}
 
 	protected abstract String getAccessToken() throws ApiException;
