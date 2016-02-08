@@ -194,6 +194,7 @@ public abstract class BaseApiClient extends RESTClient {
 
 	private HttpMethodBase buildAccessTokenHttpMethod(final NameValuePair... params) {
 		final PostMethod method = new PostMethod(getTokenServerUrl());
+		setUserAgentHeader(method);
 		method.setRequestHeader(ACCEPT, APPLICATION_JSON);
 		method.addParameter("client_secret", clientSecret);
 		method.addParameter("client_id", clientId);

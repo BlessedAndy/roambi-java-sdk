@@ -495,6 +495,7 @@ public class RoambiApiClient extends BaseApiClient {
             PostMethod authPost = null;
             try {
                 authPost = new PostMethod(authUrl);
+				setUserAgentHeader(authPost);
                 authPost.setRequestHeader(ACCEPT, APPLICATION_JSON);
 
                 int result = httpClient.executeMethod(authPost);
