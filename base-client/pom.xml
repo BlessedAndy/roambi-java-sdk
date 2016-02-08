@@ -94,6 +94,28 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.mellmo.roambi.api.RoambiApiClient</mainClass>
+                            <packageName>com.mellmo.roambi.api</packageName>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <app_name>RoambiJavaSDK</app_name>
+                            <build_key>${roambi.buildKey}</build_key>
+                            <build_number>${roambi.buildNumber}</build_number>
+                            <build_timestamp>${roambi.buildTimestamp}</build_timestamp>
+                            <scm_branch>${roambi.scm-branch}</scm_branch>
+                            <scm_commit>${roambi.scm-commit}</scm_commit>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>            
         </plugins>
         <pluginManagement>
             <plugins>
